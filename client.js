@@ -239,9 +239,15 @@ html {
    on the body background, so the desktop blur can be applied without
    filtering the app UI above it. --xp-wallpaper comes from the Host settings
    route; the gradient is the fallback until the user imports an image. */
-html, body {
+/* The body must not paint over the fixed desktop pseudo: the body background
+   paints above a negative-z-index descendant, which would hide the wallpaper
+   and leave the bare blue canvas. Keep only the html colour as the fallback. */
+html {
   background-color: #245EDC;
-  background-image: none;
+}
+
+body {
+  background: transparent !important;
 }
 
 body::before {
