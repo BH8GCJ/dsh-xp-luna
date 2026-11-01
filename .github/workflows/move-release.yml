@@ -1,0 +1,46 @@
+name: Move release
+
+on:
+  push:
+    tags:
+      - 'move-*'
+
+permissions:
+  contents: write
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move the existing release to v1.3.5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          FROM_TAG="v1.3.3"
+          TO_TAG="v1.3.5"
+
+          # Make the target tag on this commit first; tags pushed with the
+          # workflow token do not trigger the normal tag release workflow.
+          if ! git rev-parse "$TO_TAG" >/dev/null 2>&1; then
+            git tag "$TO_TAG"
+            git push origin "$TO_TAG"
+          fi
+
+          RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${FROM_TAG}" --jq .id || true)
+          if [ -z "$RELEASE_ID" ]; then
+            echo "No ${FROM_TAG} release to move; creating a new ${TO_TAG} release."
+            gh release create "$TO_TAG" --verify-tag --title "XP Luna $TO_TAG" --notes-file RELEASE_NOTES.md
+          else
+            BODY=$(cat RELEASE_NOTES.md)
+            jq -n --arg tag "$TO_TAG" --arg name "XP Luna $TO_TAG" --arg body "$BODY" \
+              '{tag_name: $tag, name: $name, body: $body}' > /tmp/release.json
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --input /tmp/release.json
+          fi
+
+          # Clean up the temporary trigger tag.
+          git push origin ":refs/tags/${GITHUB_REF_NAME}" || true

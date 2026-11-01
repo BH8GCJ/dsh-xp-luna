@@ -1,4 +1,4 @@
-# XP Luna v1.3.3 — first release
+# XP Luna v1.3.5 — first release
 
 A Windows XP Luna skin for **DeepSeek Harness**: a blue taskbar sidebar, a
 Luna titlebar and a masked-glass window. Light mode only; dark mode keeps the
@@ -19,6 +19,9 @@ built-in palette.
   material sliders does not reload the image.
 - **Separate blurs**: the desktop layer (`--xp-bg-blur`) and the window layer
   (`--xp-window-blur`) are independent.
+- **Plugin market fix**: the market's sticky search row now carries the same
+  glass as the window, so results no longer show through or overlap it while
+  scrolling.
 
 ## Install
 
@@ -44,7 +47,8 @@ endorsed by, or sponsored by Microsoft. See
 
 Windows XP Luna 风格的 DeepSeek Harness 浅色主题：蓝色任务栏侧栏、Luna
 标题栏、遮罩玻璃窗口。设置页（设置 → XP Luna 主题）提供壁纸预览/导入、
-百分比不透明度、窗口与桌面独立模糊；壁纸原图保存在本机 DSH 数据目录
+百分比不透明度、窗口与桌面独立模糊；插件市场的吸顶搜索栏也套用了同一层玻璃，
+滚动时结果不会再穿透。壁纸原图保存在本机 DSH 数据目录
 （`$DSH_HOME/.dsh-xp-luna-data/`），不随仓库附带，也不会自动下载。代码以
 MIT 发布；第三方壁纸不在许可范围内，详见
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
