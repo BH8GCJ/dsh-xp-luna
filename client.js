@@ -16,10 +16,10 @@
  * 2. A plugin-owned stylesheet — the parts a token cannot express: the desktop
  *    surface behind the shell, the blue taskbar column, and the framed window
  *    with its Luna titlebar.
- * 3. A local wallpaper picker — the only DOM the plugin injects. It reads a
- *    user-imported image from localStorage and applies it through the
- *    `--xp-wallpaper` custom property. No wallpaper ships with the plugin and
- *    nothing is fetched.
+ * 3. A Settings page — a `settings.section` occupant, not a floating overlay.
+ *    The Host stores the wallpaper and window settings outside the repository
+ *    and serves them from same-origin routes, so they survive port changes and
+ *    restarts. No wallpaper ships with the plugin.
  *
  * The stylesheet anchors only on stable host attributes, never on hashed
  * CSS-module class names:
@@ -37,7 +37,10 @@
  */
 window.__ModuleLoader__.load({
   id: '@local/dsh-xp-luna',
-  factory() {
+  factory(require) {
+    const React = require('react');
+    const h = React.createElement;
+
     /** Luna palette (identical values for both modes; the layer only runs in light). */
     const LUNA = {
       // ---- surfaces ---------------------------------------------------------
@@ -233,8 +236,8 @@ html {
 
 /* The desktop: html paints the canvas, body repeats it so the shell CSS that
    sets a body background cannot hide it either. No wallpaper ships with the
-   plugin: --xp-wallpaper is set from localStorage by the wallpaper picker,
-   and the gradient below is the fallback until the user imports an image. */
+   plugin: --xp-wallpaper comes from the Host settings route, and the gradient
+   below is the fallback until the user imports an image. */
 html, body {
   background-color: #245EDC;
   background-image: var(--xp-wallpaper, linear-gradient(180deg, #4A9BF7 0%, #9CC4F2 48%, #A9C87E 52%, #6E9C46 100%));
@@ -539,6 +542,13 @@ div:has(> [data-shell-overlay]) > div:nth-child(2) div[data-phase] {
   background-color: transparent;
 }
 
+/* The composer seat fades to the opaque work surface, which reads as a white
+   band under the glass. Keep the glass; the composer card has its own surface.
+   The attribute pair outranks the shell's .root[data-phase] .composerSeat rule. */
+div[data-phase] [data-composer-seat][data-conversation-region="composer"] {
+  background: none;
+}
+
 /* ---- titlebar: the conversation header --------------------------------- */
 /* Scoped to the conversation root: other main panels keep the host's own
    header, so their controls are not painted white-on-blue. */
@@ -659,22 +669,87 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* ---- wallpaper picker -------------------------------------------------- */
-/* No wallpaper ships with the plugin. The picker is the only way an image
-   enters the page: a local file is imported, downscaled, stored in
-   localStorage and applied through --xp-wallpaper. */
-.xp-wallpaper {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 70;
-  color: #1F1F1A;
-  font-family: Tahoma, "Segoe UI", sans-serif;
-  font-size: 12px;
+/* ---- settings page ---------------------------------------------------- */
+/* A whole page in Settings (settings.section), not a floating overlay. It
+   edits the wallpaper and the window material; the Host persists both. */
+.xp-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+  color: var(--dsw-alias-label-primary);
 }
-.xp-wallpaper__toggle,
-.xp-wallpaper__button {
+.xp-settings__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.xp-settings__intro {
+  margin: -8px 0 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.xp-settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--dsw-alias-border-l4);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-base);
+}
+.xp-settings__heading {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.xp-settings__preview {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--dsw-alias-border-l4);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #4A9BF7 0%, #9CC4F2 48%, #A9C87E 52%, #6E9C46 100%);
+}
+.xp-settings__preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.xp-settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.xp-settings__row label {
+  min-width: 96px;
+  font-size: 13px;
+}
+.xp-settings__row input[type="range"] {
+  flex: 1;
+  min-width: 120px;
+}
+.xp-settings__value {
+  min-width: 44px;
+  text-align: right;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.xp-settings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.xp-settings__button {
   box-sizing: border-box;
+  height: 28px;
+  padding: 0 12px;
   border: 1px solid #003C74;
   border-radius: 3px;
   background:
@@ -689,385 +764,332 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
   font: inherit;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
 }
-.xp-wallpaper__toggle {
-  height: 28px;
-  padding: 0 12px;
-}
-.xp-wallpaper__button {
-  height: 26px;
-  padding: 0 10px;
-}
-.xp-wallpaper__toggle:hover,
-.xp-wallpaper__button:hover {
+.xp-settings__button:hover {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.16) 46%, rgba(255, 255, 255, 0) 47%),
     linear-gradient(180deg, #FFFFFF 0%, #FBF9F2 48%, #E7E3D5 100%);
 }
-.xp-wallpaper__toggle:active,
-.xp-wallpaper__button:active {
+.xp-settings__button:active {
   background: linear-gradient(180deg, #E2DECF 0%, #EFEBDD 100%);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
 }
-.xp-wallpaper__panel {
-  position: absolute;
-  right: 0;
-  bottom: 36px;
-  width: 310px;
-  overflow: hidden;
-  border: 1px solid #003C74;
-  border-radius: 6px;
-  background: #ECE9D8;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+.xp-settings__button:disabled {
+  background: linear-gradient(180deg, #F4F2EA 0%, #E6E2D5 100%);
+  color: rgba(31, 31, 26, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
-.xp-wallpaper__panel[hidden] {
-  display: none;
-}
-.xp-wallpaper__title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 6px 4px 10px;
-  background: linear-gradient(180deg, #4A9BF7 0%, #2A6FE0 44%, #1747A8 100%);
-  color: #FFFFFF;
-  font-weight: 700;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.30);
-}
-.xp-wallpaper__close {
-  box-sizing: border-box;
-  width: 20px;
-  height: 18px;
-  padding: 0;
-  border: 1px solid #6E0F05;
-  border-radius: 3px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.12) 46%, rgba(255, 255, 255, 0) 47%),
-    linear-gradient(180deg, #F0603F 0%, #C42A17 50%, #8C0F06 100%);
-  color: #FFFFFF;
-  cursor: pointer;
-  font: 700 13px/1 Tahoma, sans-serif;
-}
-.xp-wallpaper__close:hover {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.16) 46%, rgba(255, 255, 255, 0) 47%),
-    linear-gradient(180deg, #FF7A57 0%, #D8391F 50%, #9C1407 100%);
-}
-.xp-wallpaper__body {
-  padding: 10px;
-}
-.xp-wallpaper__status {
-  margin: 0 0 8px;
-}
-.xp-wallpaper__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.xp-wallpaper__link {
-  display: block;
-  margin-top: 8px;
+.xp-settings__link {
   color: #003399;
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: underline;
 }
-.xp-wallpaper__note {
-  margin: 8px 0 0;
-  color: #5B5B52;
-  font-size: 11px;
-  line-height: 1.5;
+.xp-settings__hint {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.6;
 }
-.xp-wallpaper__error {
-  margin: 8px 0 0;
+.xp-settings__status {
+  margin: 0;
+  color: #1F6B1F;
+  font-size: 12px;
+}
+.xp-settings__error {
+  margin: 0;
   color: #B00020;
-  font-size: 11px;
+  font-size: 12px;
 }
-.xp-wallpaper__error[hidden] {
-  display: none;
+.xp-settings__loading {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
 }
 
 `;
 
-
-    /** The wallpaper is local-only: nothing is bundled, fetched or uploaded. */
-    const WALLPAPER_KEY = 'dsh.xp-luna.wallpaper';
-    const WALLPAPER_MAX_WIDTH = 2560;
-    const WALLPAPER_MAX_HEIGHT = 1600;
-    const WALLPAPER_MAX_LENGTH = 4000000;
+    /** Same-origin routes owned by the Host half. */
+    const SETTINGS_ROUTE = '/dsh-xp-luna/settings';
+    const WALLPAPER_ROUTE = '/dsh-xp-luna/wallpaper';
     const WALLPAPER_OFFICIAL = 'https://microsoft.design/wp-content/uploads/2025/08/microsoft_nostalgic.zip';
+    const DEFAULT_SETTINGS = { alpha: 0.75, blur: 4 };
 
-    const WALLPAPER_TEXT = {
+    const LUNA_TEXT = {
       zh: {
-        toggle: '壁纸',
-        title: '桌面壁纸',
-        close: '关闭',
-        none: '尚未设置壁纸，当前使用渐变底色。',
-        custom: '当前使用导入的本地壁纸。',
+        settingsNav: 'XP Luna 主题',
+        title: 'XP Luna 主题设置',
+        intro: '调整壁纸和窗口材质。设置保存在 DSH 数据目录（不在仓库里），壁纸只在你自己的机器上。',
+        wallpaper: '桌面壁纸',
+        wallpaperOn: '当前使用已导入的壁纸。',
+        wallpaperNone: '尚未设置壁纸，当前使用渐变底色。',
         import: '导入本地图片…',
         remove: '移除壁纸',
         official: '从微软官方下载推荐壁纸（zip）',
-        note: '推荐使用 Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg（微软官方 4K 怀旧壁纸包）。插件不附带、不自动下载该图片；导入后只保存在本机浏览器。也可以导入你自己的 Bliss.jpg，或任意 JPG / PNG / WebP。请自行确保壁纸的使用许可。',
+        recommended: '推荐：Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg（微软官方 4K 怀旧壁纸包）。插件不附带、不自动下载；请从微软官方下载解压后导入。',
+        supports: '支持 JPG、JPEG、PNG、WebP；也可以导入你自己的 Bliss.jpg。请确保你有权使用该图片。',
+        small: '这张图只有 {0}×{1}，铺满窗口可能显得模糊；建议使用 1920×1080 以上的图片。',
+        window: '窗口材质',
+        alpha: '窗口不透明度',
+        blur: '背景模糊',
+        save: '保存设置',
+        saved: '设置已保存。',
+        saveFailed: '保存失败，请稍后重试。',
+        wallpaperSaved: '壁纸已保存。',
+        wallpaperFailed: '壁纸操作失败，请稍后重试。',
+        removed: '壁纸已移除。',
         badType: '仅支持 JPG、JPEG、PNG、WebP。',
-        badImage: '图片读取失败，请换一张试试。',
-        tooLarge: '图片过大，压缩后仍无法保存到本机存储。',
-        saved: '已应用壁纸。',
-        removed: '已移除壁纸。',
+        lightOnly: '这些样式只在浅色模式下生效。',
+        statusUnavailable: '无法读取设置，请确认插件已启用并重启桌面应用。',
+        loading: '正在读取设置…',
+        previewAlt: '当前壁纸预览',
       },
       en: {
-        toggle: 'Wallpaper',
-        title: 'Desktop wallpaper',
-        close: 'Close',
-        none: 'No wallpaper yet — using the gradient fallback.',
-        custom: 'Using an imported local wallpaper.',
+        settingsNav: 'XP Luna theme',
+        title: 'XP Luna settings',
+        intro: 'Adjust the wallpaper and the window material. Settings live in the DSH data directory (not in the repository); the wallpaper stays on your machine.',
+        wallpaper: 'Desktop wallpaper',
+        wallpaperOn: 'Using the imported wallpaper.',
+        wallpaperNone: 'No wallpaper yet — using the gradient fallback.',
         import: 'Import a local image…',
         remove: 'Remove wallpaper',
         official: 'Download the recommended wallpaper from Microsoft (zip)',
-        note: 'Recommended: Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg from Microsoft’s official 4K nostalgic wallpaper pack. This plugin does not bundle or download it; the imported image stays in this browser. You can also import your own Bliss.jpg, or any JPG / PNG / WebP. Make sure you have the right to use the image.',
-        badType: 'Only JPG, JPEG, PNG and WebP are supported.',
-        badImage: 'Could not read that image. Try another file.',
-        tooLarge: 'The image is too large to store locally even after compression.',
-        saved: 'Wallpaper applied.',
+        recommended: 'Recommended: Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg from Microsoft’s official 4K nostalgic wallpaper pack. This plugin does not bundle or download it; download it from Microsoft and import the extracted JPG.',
+        supports: 'JPG, JPEG, PNG and WebP are supported; your own Bliss.jpg works too. Make sure you have the right to use the image.',
+        small: 'This image is only {0}×{1}; it may look blurry when stretched. 1920×1080 or larger is recommended.',
+        window: 'Window material',
+        alpha: 'Window opacity',
+        blur: 'Backdrop blur',
+        save: 'Save settings',
+        saved: 'Settings saved.',
+        saveFailed: 'Could not save the settings. Try again.',
+        wallpaperSaved: 'Wallpaper saved.',
+        wallpaperFailed: 'The wallpaper operation failed. Try again.',
         removed: 'Wallpaper removed.',
+        badType: 'Only JPG, JPEG, PNG and WebP are supported.',
+        lightOnly: 'These styles only apply in light mode.',
+        statusUnavailable: 'Could not read the settings. Make sure the plugin is enabled and restart the desktop app.',
+        loading: 'Reading settings…',
+        previewAlt: 'Current wallpaper preview',
       },
     };
 
-    function wallpaperText() {
+    function lunaText() {
       const language = typeof navigator !== 'undefined' && typeof navigator.language === 'string' ? navigator.language : '';
-      return language.toLowerCase().startsWith('zh') ? WALLPAPER_TEXT.zh : WALLPAPER_TEXT.en;
+      return language.toLowerCase().startsWith('zh') ? LUNA_TEXT.zh : LUNA_TEXT.en;
     }
 
-    function readStoredWallpaper() {
-      try {
-        const value = window.localStorage.getItem(WALLPAPER_KEY);
-        return typeof value === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(value) ? value : undefined;
-      } catch (error) {
-        return undefined;
-      }
-    }
-
-    function applyWallpaper(data) {
+    function applyRemoteSettings(settings) {
       const root = document.documentElement;
-      if (typeof data === 'string' && data.startsWith('data:image/')) {
-        root.style.setProperty('--xp-wallpaper', 'url("' + data + '")');
+      const alpha = typeof settings?.alpha === 'number' ? Math.min(1, Math.max(0.5, settings.alpha)) : DEFAULT_SETTINGS.alpha;
+      const blur = typeof settings?.blur === 'number' ? Math.min(20, Math.max(0, Math.round(settings.blur))) : DEFAULT_SETTINGS.blur;
+      root.style.setProperty('--xp-window-alpha', String(alpha));
+      root.style.setProperty('--xp-window-blur', blur + 'px');
+      if (settings?.wallpaper === true) {
+        root.style.setProperty('--xp-wallpaper', 'url("' + WALLPAPER_ROUTE + '?t=' + Date.now() + '")');
       } else {
         root.style.removeProperty('--xp-wallpaper');
       }
     }
 
-    /**
-     * The wallpaper picker: a small XP window pinned to the bottom-right.
-     * Importing a local file is the only way an image enters the page; the
-     * image is downscaled, re-encoded and kept in localStorage.
-     */
-    function createWallpaperPicker() {
-      const text = wallpaperText();
-      for (const stale of document.querySelectorAll('.xp-wallpaper')) stale.remove();
+    function clearRemoteSettings() {
+      const root = document.documentElement;
+      root.style.removeProperty('--xp-window-alpha');
+      root.style.removeProperty('--xp-window-blur');
+      root.style.removeProperty('--xp-wallpaper');
+    }
 
-      const root = document.createElement('div');
-      root.className = 'xp-wallpaper';
+    async function fetchRemoteSettings() {
+      const response = await fetch(SETTINGS_ROUTE, { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error('http ' + response.status);
+      return await response.json();
+    }
 
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'xp-wallpaper__toggle';
-      toggle.textContent = text.toggle;
-      toggle.setAttribute('aria-expanded', 'false');
+    /** The whole Settings page; registered through `settings.section`. */
+    function XpLunaSettings() {
+      const text = lunaText();
+      const [settings, setSettings] = React.useState(null);
+      const [busy, setBusy] = React.useState(false);
+      const [status, setStatus] = React.useState('');
+      const [error, setError] = React.useState('');
+      const [preview, setPreview] = React.useState(0);
+      const [dimensions, setDimensions] = React.useState(null);
+      const file = React.useRef(null);
 
-      const panel = document.createElement('div');
-      panel.className = 'xp-wallpaper__panel';
-      panel.hidden = true;
-      panel.setAttribute('role', 'dialog');
-      panel.setAttribute('aria-label', text.title);
+      React.useEffect(() => {
+        let alive = true;
+        fetchRemoteSettings()
+          .then((value) => {
+            if (alive) setSettings(value);
+          })
+          .catch(() => {
+            if (!alive) return;
+            setError(text.statusUnavailable);
+            setSettings({ ...DEFAULT_SETTINGS, wallpaper: false });
+          });
+        return () => {
+          alive = false;
+        };
+      }, []);
 
-      const titlebar = document.createElement('div');
-      titlebar.className = 'xp-wallpaper__title';
-      const title = document.createElement('span');
-      title.textContent = text.title;
-      const close = document.createElement('button');
-      close.type = 'button';
-      close.className = 'xp-wallpaper__close';
-      close.setAttribute('aria-label', text.close);
-      close.textContent = '\u00D7';
-      titlebar.append(title, close);
-
-      const body = document.createElement('div');
-      body.className = 'xp-wallpaper__body';
-
-      const status = document.createElement('p');
-      status.className = 'xp-wallpaper__status';
-
-      const actions = document.createElement('div');
-      actions.className = 'xp-wallpaper__actions';
-
-      const importButton = document.createElement('button');
-      importButton.type = 'button';
-      importButton.className = 'xp-wallpaper__button';
-      importButton.textContent = text.import;
-
-      const file = document.createElement('input');
-      file.type = 'file';
-      file.accept = '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp';
-      file.hidden = true;
-
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.className = 'xp-wallpaper__button';
-      removeButton.textContent = text.remove;
-
-      actions.append(importButton, removeButton);
-
-      const link = document.createElement('a');
-      link.className = 'xp-wallpaper__link';
-      link.href = WALLPAPER_OFFICIAL;
-      link.target = '_blank';
-      link.rel = 'noreferrer';
-      link.textContent = text.official;
-
-      const note = document.createElement('p');
-      note.className = 'xp-wallpaper__note';
-      note.textContent = text.note;
-
-      const error = document.createElement('p');
-      error.className = 'xp-wallpaper__error';
-      error.hidden = true;
-
-      body.append(status, actions, link, note, error);
-      panel.append(titlebar, body);
-      root.append(toggle, panel, file);
-
-      let current = readStoredWallpaper();
-
-      function setStatus(message) {
-        status.textContent =
-          message !== undefined ? message : current !== undefined ? text.custom : text.none;
-        removeButton.hidden = current === undefined;
+      if (settings === null) {
+        return h('p', { className: 'xp-settings__loading' }, text.loading);
       }
 
-      function showError(message) {
-        error.textContent = message;
-        error.hidden = false;
-      }
+      const update = (key, value) => setSettings((current) => ({ ...current, [key]: value }));
 
-      function setOpen(open) {
-        panel.hidden = !open;
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        if (open) {
-          error.hidden = true;
-          setStatus();
+      const save = async () => {
+        setBusy(true);
+        setStatus('');
+        setError('');
+        try {
+          const response = await fetch(SETTINGS_ROUTE, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ alpha: settings.alpha, blur: settings.blur }),
+          });
+          if (!response.ok) throw new Error('http ' + response.status);
+          const saved = await response.json();
+          setSettings(saved);
+          applyRemoteSettings(saved);
+          setStatus(text.saved);
+        } catch (failure) {
+          setError(text.saveFailed);
+        } finally {
+          setBusy(false);
         }
-      }
+      };
 
-      function importFile(picked) {
-        error.hidden = true;
+      const upload = async (picked) => {
         if (!/^image\/(jpeg|jpg|png|webp)$/.test(picked.type)) {
-          showError(text.badType);
+          setError(text.badType);
           return;
         }
-        const reader = new FileReader();
-        reader.onerror = function () {
-          showError(text.badImage);
-        };
-        reader.onload = function () {
-          const image = new Image();
-          image.onerror = function () {
-            showError(text.badImage);
-          };
-          image.onload = function () {
-            const scale = Math.min(
-              1,
-              WALLPAPER_MAX_WIDTH / image.naturalWidth,
-              WALLPAPER_MAX_HEIGHT / image.naturalHeight,
-            );
-            const width = Math.max(1, Math.round(image.naturalWidth * scale));
-            const height = Math.max(1, Math.round(image.naturalHeight * scale));
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const context = canvas.getContext('2d');
-            if (context === null) {
-              showError(text.badImage);
-              return;
-            }
-            context.fillStyle = '#ECE9D8';
-            context.fillRect(0, 0, width, height);
-            context.drawImage(image, 0, 0, width, height);
-            let data;
-            try {
-              data = canvas.toDataURL('image/jpeg', 0.85);
-            } catch (failure) {
-              showError(text.badImage);
-              return;
-            }
-            if (typeof data !== 'string' || data.length > WALLPAPER_MAX_LENGTH) {
-              showError(text.tooLarge);
-              return;
-            }
-            try {
-              window.localStorage.setItem(WALLPAPER_KEY, data);
-            } catch (failure) {
-              showError(text.tooLarge);
-              return;
-            }
-            current = data;
-            applyWallpaper(data);
-            setStatus(text.saved);
-          };
-          image.src = String(reader.result);
-        };
-        reader.readAsDataURL(picked);
-      }
-
-      function onToggle() {
-        setOpen(panel.hidden);
-      }
-      function onClose() {
-        setOpen(false);
-      }
-      function onImport() {
-        file.click();
-      }
-      function onFile() {
-        const picked = file.files !== null && file.files.length > 0 ? file.files[0] : undefined;
-        file.value = '';
-        if (picked !== undefined) importFile(picked);
-      }
-      function onRemove() {
+        setBusy(true);
+        setStatus('');
+        setError('');
         try {
-          window.localStorage.removeItem(WALLPAPER_KEY);
+          const response = await fetch(WALLPAPER_ROUTE, {
+            method: 'POST',
+            headers: { 'content-type': picked.type },
+            body: picked,
+          });
+          if (!response.ok) throw new Error('http ' + response.status);
+          const next = { ...settings, wallpaper: true };
+          setSettings(next);
+          setPreview(Date.now());
+          setDimensions(null);
+          applyRemoteSettings(next);
+          setStatus(text.wallpaperSaved);
         } catch (failure) {
-          // The image is still removed from the page below.
+          setError(text.wallpaperFailed);
+        } finally {
+          setBusy(false);
         }
-        current = undefined;
-        applyWallpaper(undefined);
-        setStatus(text.removed);
-      }
-      function onKey(event) {
-        if (event.key === 'Escape' && !panel.hidden) {
-          event.preventDefault();
-          setOpen(false);
-        }
-      }
-
-      toggle.addEventListener('click', onToggle);
-      close.addEventListener('click', onClose);
-      importButton.addEventListener('click', onImport);
-      file.addEventListener('change', onFile);
-      removeButton.addEventListener('click', onRemove);
-      document.addEventListener('keydown', onKey);
-
-      applyWallpaper(current);
-      setStatus();
-      if (document.body !== null) document.body.append(root);
-
-      return {
-        cleanup() {
-          toggle.removeEventListener('click', onToggle);
-          close.removeEventListener('click', onClose);
-          importButton.removeEventListener('click', onImport);
-          file.removeEventListener('change', onFile);
-          removeButton.removeEventListener('click', onRemove);
-          document.removeEventListener('keydown', onKey);
-          root.remove();
-          applyWallpaper(undefined);
-        },
       };
+
+      const remove = async () => {
+        setBusy(true);
+        setStatus('');
+        setError('');
+        try {
+          const response = await fetch(WALLPAPER_ROUTE, { method: 'DELETE' });
+          if (!response.ok) throw new Error('http ' + response.status);
+          const next = { ...settings, wallpaper: false };
+          setSettings(next);
+          applyRemoteSettings(next);
+          setStatus(text.removed);
+        } catch (failure) {
+          setError(text.wallpaperFailed);
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      const dimensionsHint =
+        dimensions !== null && dimensions[0] > 0 && dimensions[0] < 1920
+          ? text.small.replace('{0}', String(dimensions[0])).replace('{1}', String(dimensions[1]))
+          : '';
+
+      return h('div', { className: 'xp-settings' },
+        h('h2', { className: 'xp-settings__title' }, text.title),
+        h('p', { className: 'xp-settings__intro' }, text.intro),
+        h('section', { className: 'xp-settings__section' },
+          h('h3', { className: 'xp-settings__heading' }, text.wallpaper),
+          h('div', { className: 'xp-settings__preview' },
+            settings.wallpaper
+              ? h('img', {
+                  src: WALLPAPER_ROUTE + '?t=' + preview,
+                  alt: text.previewAlt,
+                  onLoad: (event) => {
+                    const image = event.currentTarget;
+                    setDimensions([image.naturalWidth, image.naturalHeight]);
+                  },
+                })
+              : null,
+          ),
+          h('p', { className: 'xp-settings__hint' }, settings.wallpaper ? text.wallpaperOn : text.wallpaperNone),
+          h('div', { className: 'xp-settings__actions' },
+            h('button', {
+              type: 'button',
+              className: 'xp-settings__button',
+              disabled: busy,
+              onClick: () => file.current?.click(),
+            }, text.import),
+            settings.wallpaper
+              ? h('button', { type: 'button', className: 'xp-settings__button', disabled: busy, onClick: remove }, text.remove)
+              : null,
+            h('input', {
+              ref: file,
+              type: 'file',
+              accept: '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
+              hidden: true,
+              onChange: (event) => {
+                const input = event.currentTarget;
+                const picked = input.files !== null && input.files.length > 0 ? input.files[0] : undefined;
+                input.value = '';
+                if (picked !== undefined) upload(picked);
+              },
+            }),
+          ),
+          h('a', { className: 'xp-settings__link', href: WALLPAPER_OFFICIAL, target: '_blank', rel: 'noreferrer' }, text.official),
+          h('p', { className: 'xp-settings__hint' }, text.recommended),
+          h('p', { className: 'xp-settings__hint' }, text.supports),
+          dimensionsHint !== '' ? h('p', { className: 'xp-settings__hint' }, dimensionsHint) : null,
+        ),
+        h('section', { className: 'xp-settings__section' },
+          h('h3', { className: 'xp-settings__heading' }, text.window),
+          h('div', { className: 'xp-settings__row' },
+            h('label', { htmlFor: 'xp-luna-alpha' }, text.alpha),
+            h('input', {
+              id: 'xp-luna-alpha',
+              type: 'range',
+              min: 0.5,
+              max: 1,
+              step: 0.01,
+              value: settings.alpha,
+              onChange: (event) => update('alpha', Number(event.currentTarget.value)),
+            }),
+            h('span', { className: 'xp-settings__value' }, Number(settings.alpha).toFixed(2)),
+          ),
+          h('div', { className: 'xp-settings__row' },
+            h('label', { htmlFor: 'xp-luna-blur' }, text.blur),
+            h('input', {
+              id: 'xp-luna-blur',
+              type: 'range',
+              min: 0,
+              max: 20,
+              step: 1,
+              value: settings.blur,
+              onChange: (event) => update('blur', Number(event.currentTarget.value)),
+            }),
+            h('span', { className: 'xp-settings__value' }, settings.blur + 'px'),
+          ),
+          h('div', { className: 'xp-settings__actions' },
+            h('button', { type: 'button', className: 'xp-settings__button', disabled: busy, onClick: save }, text.save),
+          ),
+          h('p', { className: 'xp-settings__hint' }, text.lightOnly),
+        ),
+        status !== '' ? h('p', { className: 'xp-settings__status' }, status) : null,
+        error !== '' ? h('p', { className: 'xp-settings__error' }, error) : null,
+      );
     }
 
     /** One owned style element; removing it restores the host's own rendering. */
@@ -1082,22 +1104,27 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
     }
 
     return {
-      inject: ['theme'],
+      inject: ['theme', 'slots'],
       apply(ctx) {
+        ctx.slots.inject('settings.section', () =>
+          ctx.slots.register({
+            name: 'settings.section',
+            id: 'xp-luna',
+            order: 35,
+            label: () => lunaText().settingsNav,
+          }, XpLunaSettings));
+
         const source = '@local/dsh-xp-luna';
         /** Token-layer disposer while the light palette is active. */
         let layer;
         /** Stylesheet disposer while the light palette is active. */
         let styles;
-        /** Wallpaper picker while the light skin is mounted. */
-        let picker;
+        /** Guards async settings reads against a later teardown. */
+        let settingsRequest = 0;
 
         const teardown = () => {
-          if (picker !== undefined) {
-            const dispose = picker;
-            picker = undefined;
-            dispose.cleanup();
-          }
+          settingsRequest += 1;
+          clearRemoteSettings();
           if (styles !== undefined) {
             const dispose = styles;
             styles = undefined;
@@ -1128,7 +1155,14 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
             }
           }
           if (styles === undefined) styles = installStyles();
-          if (picker === undefined) picker = createWallpaperPicker();
+          const request = ++settingsRequest;
+          fetchRemoteSettings()
+            .then((settings) => {
+              if (request === settingsRequest) applyRemoteSettings(settings);
+            })
+            .catch(() => {
+              // No Host routes (e.g. an older host): keep the CSS defaults.
+            });
         };
 
         ctx.effect(() => {

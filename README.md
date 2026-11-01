@@ -17,7 +17,7 @@
 
 ## English
 
-A DeepSeek Harness theme that puts the Windows XP Luna desktop back on screen: a blue taskbar column on the left, and the conversation inside a floating XP window with a glass body and a Luna titlebar. The wallpaper is **not bundled** — you import your own image locally, or start from the built-in gradient.
+A DeepSeek Harness theme that puts the Windows XP Luna desktop back on screen: a blue taskbar column on the left, and the conversation inside a floating XP window with a glass body and a Luna titlebar. The wallpaper is **not bundled** — import your own image from the theme's Settings page, or start from the built-in gradient.
 
 It is not a pixel-perfect recreation — the native window frame and the system taskbar live outside the page — but it keeps what makes Luna recognisable: the beige work surface, square corners, hard shadows, opaque menus, pale-yellow tooltips, and three caption buttons in the top-right corner.
 
@@ -25,14 +25,14 @@ It is not a pixel-perfect recreation — the native window frame and the system 
 
 | | Feature | Notes |
 |---|---|---|
-| 🖼 | **Local wallpaper** | Import the Microsoft 4K nostalgic wallpaper, Bliss.jpg, or any JPG/PNG/WebP; stored in this browser, never committed or uploaded |
+| 🖼 | **Host-stored wallpaper** | Import the Microsoft 4K nostalgic wallpaper, Bliss.jpg, or any JPG/PNG/WebP from **Settings → XP Luna theme**; stored on this machine, never committed |
 | 🔵 | **Luna taskbar sidebar** | Left column as a blue gradient, with text, icons and borders turned white inside it |
 | 🧊 | **Glass window** | The conversation, the Plugins page and the automation tasks page are translucent beige with a light backdrop blur (`0.75` / `4px`, both tunable); other management pages stay opaque so their lists stay readable |
 | 🪟 | **Luna titlebars** | The conversation header gets the glossy gradient and three XP-style caption buttons, close colour on the far-right control; the Plugins page header gets the same full-width band |
 | 🖱 | **XP command buttons** | The automation tasks page's “New” button and the Plugins toolbar use the beveled Luna surface instead of flat host fills |
 | 🎨 | **141 token overrides** | Beige surfaces, square corners, hard shadows, opaque menus, pale-yellow tooltips, wider scrollbars |
 | 🌗 | **Light mode only** | Dark mode keeps the built-in palette; the skin removes itself when you switch |
-| 🪶 | **No dependencies, no React** | Theme tokens plus one stylesheet; the only DOM the plugin adds is the small wallpaper picker |
+| 🪶 | **No bundled dependencies** | Theme tokens plus one stylesheet; React comes from the host module table; the settings live on an official Settings page |
 
 ### 📸 Screenshots
 
@@ -62,23 +62,24 @@ dsh plugin --profile web add github:BH8GCJ/dsh-xp-luna
 
 ### 🖼 Wallpaper
 
-This repository ships **no wallpaper files**. The plugin starts on a neutral XP-coloured gradient and waits for you to import an image.
+This repository ships **no wallpaper files**. Open **Settings → XP Luna theme** to import one; the plugin starts on a neutral XP-coloured gradient until then.
 
-Click the small **Wallpaper** button in the bottom-right corner. The panel lets you:
+The page has two parts:
 
-- **Import a local image** — JPG, JPEG, PNG or WebP. The file is read in the browser, downscaled to at most 2560×1600, re-encoded as JPEG and stored in `localStorage` (`dsh.xp-luna.wallpaper`). Nothing is uploaded.
-- **Remove the wallpaper** — returns to the gradient fallback.
-- **Open the official download link** for the recommended default.
+- **Desktop wallpaper** — preview, **Import a local image** (JPG, JPEG, PNG or WebP), **Remove wallpaper**, and the official download link. The original file is uploaded to the local Host (never to the internet) and stored in `$DSH_HOME/.dsh-xp-luna-data/`, outside the repository. It survives app restarts and the Web UI's changing port.
+- **Window material** — window opacity and backdrop blur sliders, stored in the same data directory.
 
-**Recommended default:** `Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg` from Microsoft's official 4K nostalgic wallpaper pack. Download the zip from Microsoft Design, extract the JPG, then import it with the picker:
+**Recommended default:** `Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg` from Microsoft's official 4K nostalgic wallpaper pack. Download the zip from Microsoft Design, extract the JPG, then import it on the settings page:
 
 <https://microsoft.design/wp-content/uploads/2025/08/microsoft_nostalgic.zip>
 
 The plugin does **not** download this file for you, does **not** bundle it, and does **not** use third-party mirrors. Public availability is not treated as permission to redistribute it.
 
-**Custom wallpaper:** you can import the original Windows XP `Bliss.jpg` photograph or any other image you have the right to use. The plugin never distributes Bliss.jpg or any other copyrighted wallpaper; supplied files remain your responsibility.
+**Custom wallpaper:** you can import the original Windows XP `Bliss.jpg` photograph or any other image you have the right to use. If the imported image is small, the page warns that it may look blurry when stretched; 1920×1080 or larger is recommended. The plugin never distributes Bliss.jpg or any other copyrighted wallpaper; supplied files remain your responsibility.
 
 Wallpapers are third-party materials and are **not** covered by this project's MIT License. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+> Updating from an older version? Restart the desktop app once: the wallpaper/settings routes live in the Host half and load at startup.
 
 ### 🎛 Configuration
 
@@ -86,23 +87,23 @@ Everything else lives in `src/client.js`; rebuild with `node scripts/build.mjs` 
 
 | What | Where | Default |
 |---|---|---|
-| Window opacity | `--xp-window-alpha` | `0.75` |
-| Window backdrop blur | `--xp-window-blur` | `4px` |
+| Window opacity | **Settings → XP Luna theme** (or `--xp-window-alpha`) | `0.75` |
+| Window backdrop blur | **Settings → XP Luna theme** (or `--xp-window-blur`) | `4px` |
 | Window width | `max-width: min(1440px, 92%)` on the window rule | — |
 | Taskbar / titlebar gradients | the `taskbar` and `titlebar` `linear-gradient()` blocks | Luna blue |
 | Caption buttons | the `XP caption trio` block | blue, blue, red |
 | Schedule button in the header | remove the `[data-schedule-reminder-entry]` rule | hidden |
-| Wallpaper | the bottom-right picker; stored locally | gradient fallback |
+| Wallpaper | **Settings → XP Luna theme**; stored in `$DSH_HOME/.dsh-xp-luna-data/` | gradient fallback |
 
-> The wallpaper picker is the only runtime UI the plugin adds. Everything else stays a token layer plus one stylesheet, so installing and uninstalling the theme remains clean.
+> The settings page is the only runtime UI the plugin adds. Everything else stays a token layer plus one stylesheet, so installing and uninstalling the theme remains clean.
 
 ### 🔍 Under the hood (for reviewers)
 
-The client half does three things, all only while the resolved scheme is light:
+The client half does three things; the token layer and stylesheet only while the resolved scheme is light, the Settings page once:
 
 1. **Token layer** — `ctx.theme.overrideTokens()` writes 141 `--dsw-*` / `--dsh-*` overrides onto `body`: palette, radii, shadows, menus, tooltips, scrollbars.
 2. **Scoped stylesheet** — one plugin-owned `<style>` element for what tokens cannot express: sidebar gradient, floating window, titlebar, caption buttons, wallpaper fallback. It is removed with the plugin.
-3. **Wallpaper picker** — one small element pinned to the bottom-right. It reads the user's imported image from `localStorage`, applies it through `--xp-wallpaper`, and removes both on teardown. No network requests, no uploads, no bundled images.
+3. **Settings page** — a `settings.section` occupant with the wallpaper preview, import/remove controls and the window sliders. It talks to the Host half through same-origin routes: `GET/POST/DELETE /dsh-xp-luna/wallpaper` and `GET/POST /dsh-xp-luna/settings`. The Host stores the original image under `$DSH_HOME/.dsh-xp-luna-data/` and serves it through the route, so it survives port changes and restarts. No bundled images; the only upload target is the local Host.
 
 Selectors use only stable host attributes, never hashed CSS-module class names:
 
@@ -122,12 +123,13 @@ Selectors use only stable host attributes, never hashed CSS-module class names:
 - **Not a pixel-perfect recreation.** The native window frame, the system taskbar and the Start menu are outside the page. There is no page-side IPC for minimise/maximise/close either, so the caption buttons are visual only.
 - The sidebar acts as the “taskbar” and the conversation header as the “titlebar”; that is a reinterpretation of the layout, not a native XP structure.
 - On a blank Session the header does not render its utility row, so the caption buttons disappear until a conversation exists.
-- The glass covers the conversation, the Plugins page and the automation tasks page; other management pages (Settings, ...) keep an opaque work surface. Sticky surfaces (the composer shelf, compaction and disclosure headers) also stay opaque so scrolled content cannot bleed through them.
-- **No wallpaper ships with the plugin.** Without an import, the desktop uses the gradient fallback; wallpapers are user-provided and must comply with their own copyright terms.
+- The glass covers the conversation, the Plugins page and the automation tasks page; other management pages (Settings, ...) keep an opaque work surface. The composer seat's beige fade is cleared so the glass shows through; the composer card, compaction and disclosure headers keep their own surfaces.
+- **No wallpaper ships with the plugin.** Without an import, the desktop uses the gradient fallback; wallpapers are user-provided and must comply with their own copyright terms. Small images are stretched by `background-size: cover`; the settings page warns under 1920 px wide.
+- The Host half registers the wallpaper/settings routes at startup; after upgrading the plugin, restart the desktop app once.
 
 ### 🗑 Uninstall
 
-Disable or remove the plugin in the Plugin Manager; the stock theme comes back immediately. The imported wallpaper stays in this browser's `localStorage`; remove it from the picker before uninstalling if you want it gone. From the command line:
+Disable or remove the plugin in the Plugin Manager; the stock theme comes back immediately. The imported wallpaper and settings stay in `$DSH_HOME/.dsh-xp-luna-data/`; remove the wallpaper from the settings page before uninstalling, or delete that directory. From the command line:
 
 ```sh
 dsh plugin --profile desktop remove @local/dsh-xp-luna
@@ -137,7 +139,7 @@ dsh plugin --profile desktop remove @local/dsh-xp-luna
 
 ## 中文
 
-一个 DeepSeek Harness 主题，把 Windows XP 的 Luna 桌面重新搬回屏幕：左侧是一条蓝色任务栏，聊天界面装在一扇悬浮的 XP 窗口里——玻璃质感的窗体，配 Luna 标题栏。壁纸**不随插件附带**：你可以从本地导入自己的图片，或者先用内置渐变。
+一个 DeepSeek Harness 主题，把 Windows XP 的 Luna 桌面重新搬回屏幕：左侧是一条蓝色任务栏，聊天界面装在一扇悬浮的 XP 窗口里——玻璃质感的窗体，配 Luna 标题栏。壁纸**不随插件附带**：在主题的设置页导入自己的图片，或者先用内置渐变。
 
 它不是像素级复刻——原生窗口边框和系统任务栏在网页层之外——但保留了 Luna 最有辨识度的部分：米色工作面、方正圆角、硬边阴影、不透明菜单、淡黄色提示框，以及右上角那三枚窗口按钮。
 
@@ -145,14 +147,14 @@ dsh plugin --profile desktop remove @local/dsh-xp-luna
 
 | | 功能 | 说明 |
 |---|---|---|
-| 🖼 | **本地壁纸** | 导入微软 4K 怀旧壁纸、Bliss.jpg，或任意 JPG/PNG/WebP；只存在本机浏览器，不提交、不上传 |
+| 🖼 | **壁纸存在本机 Host** | 在 **设置 → XP Luna 主题** 里导入微软 4K 怀旧壁纸、Bliss.jpg，或任意 JPG/PNG/WebP；存在本机 DSH 数据目录，不提交到仓库 |
 | 🔵 | **Luna 任务栏侧栏** | 左侧栏改为蓝色渐变，栏内文字、图标、描边整体转白 |
 | 🧊 | **玻璃窗口** | 会话区、插件页和自动化任务页是半透明米色 + 轻度背景模糊（默认 `0.75` / `4px`，可调）；其他管理页保持不透明，长列表才看得清 |
 | 🪟 | **Luna 标题栏** | 会话头是高光渐变 + 右上角三枚 XP 风格按钮（关闭色在最右）；插件页页头也套用同一条通栏蓝色渐变 |
 | 🖱 | **XP 风格按钮** | 自动化任务页的「新建」和插件页工具栏改用 Luna 立体按钮，而不是宿主默认的扁平填充 |
 | 🎨 | **141 个令牌覆盖** | 米色工作面、方正圆角、硬边阴影、不透明菜单、淡黄 tooltip、加宽滚动条 |
 | 🌗 | **仅浅色模式** | 深色模式保留内置配色，皮肤自动卸载 |
-| 🪶 | **零依赖、无 React** | 主题令牌 + 一张样式表；插件只额外注入右下角的壁纸选择器 |
+| 🪶 | **无捆绑依赖** | 主题令牌 + 一张样式表；React 来自宿主模块表；设置放在官方设置页里 |
 
 ### 📸 截图
 
@@ -182,23 +184,24 @@ dsh plugin --profile web add github:BH8GCJ/dsh-xp-luna
 
 ### 🖼 壁纸
 
-仓库**不附带任何壁纸文件**。插件启动时使用中性的 XP 渐变底色，等你导入图片。
+仓库**不附带任何壁纸文件**。打开 **设置 → XP Luna 主题** 导入图片；在那之前，插件使用中性的 XP 渐变底色。
 
-点击右下角的 **壁纸** 按钮，面板里可以：
+这个页面分两部分：
 
-- **导入本地图片**——支持 JPG、JPEG、PNG、WebP。图片在浏览器内读取、缩放到最大 2560×1600、重新编码为 JPEG，保存在 `localStorage`（`dsh.xp-luna.wallpaper`），不会上传。
-- **移除壁纸**——回到渐变底色。
-- **打开官方下载链接**——获取推荐默认壁纸。
+- **桌面壁纸**——预览、**导入本地图片**（JPG、JPEG、PNG、WebP）、**移除壁纸**，以及官方下载链接。原图会上传到本机 Host（不会发往互联网），保存在 `$DSH_HOME/.dsh-xp-luna-data/`，不在仓库里；应用重启、Web 端口变化都不会丢。
+- **窗口材质**——窗口不透明度和背景模糊滑杆，保存在同一个数据目录。
 
-**推荐默认壁纸**：`Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg`，来自微软官方的 4K 怀旧壁纸包。请从 Microsoft Design 下载 zip、解压出 JPG，再用壁纸选择器导入：
+**推荐默认壁纸**：`Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg`，来自微软官方的 4K 怀旧壁纸包。请从 Microsoft Design 下载 zip、解压出 JPG，再在设置页导入：
 
 <https://microsoft.design/wp-content/uploads/2025/08/microsoft_nostalgic.zip>
 
 插件**不会**替你下载这个文件，**不会**打包它，也**不会**使用第三方镜像。公开可获取不等于获得再分发授权。
 
-**自定义壁纸**：可以导入原版 Windows XP 的 `Bliss.jpg`，或任何你有权使用的图片。插件不分发 Bliss.jpg 或任何受版权保护的壁纸；导入的文件由你自行负责。
+**自定义壁纸**：可以导入原版 Windows XP 的 `Bliss.jpg`，或任何你有权使用的图片。如果图片偏小，设置页会提示拉伸后可能模糊；建议 1920×1080 以上。插件不分发 Bliss.jpg 或任何受版权保护的壁纸；导入的文件由你自行负责。
 
 壁纸属于第三方素材，**不在**本项目的 MIT 许可范围内，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+> 从旧版本升级？请重启一次桌面应用：壁纸/设置路由在 Host 半边，启动时才加载。
 
 ### 🎛 可调项
 
@@ -206,23 +209,23 @@ dsh plugin --profile web add github:BH8GCJ/dsh-xp-luna
 
 | 想改什么 | 位置 | 默认值 |
 |---|---|---|
-| 窗口不透明度 | `--xp-window-alpha` | `0.75` |
-| 窗口背景模糊 | `--xp-window-blur` | `4px` |
+| 窗口不透明度 | **设置 → XP Luna 主题**（或 `--xp-window-alpha`） | `0.75` |
+| 窗口背景模糊 | **设置 → XP Luna 主题**（或 `--xp-window-blur`） | `4px` |
 | 窗口宽度 | 窗口规则上的 `max-width: min(1440px, 92%)` | — |
 | 任务栏 / 标题栏渐变 | `taskbar` 与 `titlebar` 段里的 `linear-gradient()` | Luna 蓝 |
 | 三枚按钮样式 | `XP caption trio` 段 | 蓝、蓝、红 |
 | 顶部工具行的日程按钮 | 删掉 `[data-schedule-reminder-entry]` 那条规则 | 隐藏 |
-| 壁纸 | 右下角壁纸选择器，保存在本机 | 渐变底色 |
+| 壁纸 | **设置 → XP Luna 主题**；存在 `$DSH_HOME/.dsh-xp-luna-data/` | 渐变底色 |
 
-> 壁纸选择器是插件唯一新增的运行时 UI；其余部分保持「令牌层 + 一张样式表」，安装和卸载都干净。
+> 设置页是插件唯一新增的运行时 UI；其余部分保持「令牌层 + 一张样式表」，安装和卸载都干净。
 
 ### 🔍 实现细节（供评审参考）
 
-Client 端做三件事，且都只在浅色模式下安装：
+Client 端做三件事；令牌层和样式表只在浅色模式下安装，设置页注册一次：
 
 1. **令牌层**——`ctx.theme.overrideTokens()` 把 141 个 `--dsw-*` / `--dsh-*` 覆盖写到 `body` 上：配色、圆角、阴影、菜单、提示框、滚动条。
 2. **作用域样式表**——一个插件自有的 `<style>`，负责令牌表达不了的部分：侧栏渐变、悬浮窗口、标题栏、窗口按钮、壁纸底色。卸载时整块移除。
-3. **壁纸选择器**——右下角一个小元素；从 `localStorage` 读取用户导入的图片，通过 `--xp-wallpaper` 应用，卸载时一起移除。不发起网络请求、不上传、不附带图片。
+3. **设置页**——`settings.section` 的一页，包含壁纸预览、导入/移除和窗口滑杆。它通过同源路由与 Host 半边通信：`GET/POST/DELETE /dsh-xp-luna/wallpaper`、`GET/POST /dsh-xp-luna/settings`。Host 把原图存在 `$DSH_HOME/.dsh-xp-luna-data/`，通过路由提供，所以跨端口、跨重启都不丢；不附带图片，唯一的上传目标是本机 Host。
 
 选择器只依赖宿主稳定的 `data-*` 属性，不使用哈希类名：
 
@@ -242,12 +245,13 @@ Client 端做三件事，且都只在浅色模式下安装：
 - **不是像素级复刻。** 原生窗口边框、系统任务栏、开始菜单都在页面之外；页面侧也没有最小化/最大化/关闭的 IPC，因此三枚按钮只负责视觉。
 - 侧栏充当「任务栏」、会话头充当「标题栏」，这是对布局的重新诠释，不是原生 XP 结构。
 - 空会话（hero）状态下会话头不渲染工具行，三枚按钮会暂时消失，进入会话后恢复。
-- 玻璃只作用于会话区、插件页和自动化任务页；设置等其他管理页保持不透明米色。输入框托盘、压缩/折叠标题等 sticky 元素也保持不透明，避免滚动内容透出来。
-- **插件不附带壁纸。** 没有导入时桌面使用渐变底色；导入的壁纸由用户提供，需自行确保版权与使用许可。
+- 玻璃只作用于会话区、插件页和自动化任务页；设置等其他管理页保持不透明米色。输入框底座的米色渐隐已清掉，让玻璃透出来；输入框卡片、压缩/折叠标题保留自己的表面。
+- **插件不附带壁纸。** 没有导入时桌面使用渐变底色；导入的壁纸由用户提供，需自行确保版权与使用许可。小图片会被 `background-size: cover` 拉伸，设置页在宽度小于 1920px 时会提示。
+- 壁纸/设置路由在 Host 半边启动时注册；升级插件后请重启一次桌面应用。
 
 ### 🗑 卸载
 
-在插件管理器里停用或移除即可，原生主题会立刻恢复。导入的壁纸仍留在本机 `localStorage`；如果希望一并清除，请先在壁纸选择器里点「移除壁纸」。命令行方式：
+在插件管理器里停用或移除即可，原生主题会立刻恢复。导入的壁纸与设置仍留在 `$DSH_HOME/.dsh-xp-luna-data/`；如果希望一并清除，请先在设置页移除壁纸，或直接删除该目录。命令行方式：
 
 ```sh
 dsh plugin --profile desktop remove @local/dsh-xp-luna

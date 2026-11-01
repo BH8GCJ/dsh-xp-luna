@@ -1,9 +1,9 @@
 {
   "name": "@local/dsh-xp-luna",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Windows XP Luna skin for the DeepSeek Harness Web UI, with a local-only wallpaper picker and no bundled wallpapers.",
+  "description": "Windows XP Luna skin for the DeepSeek Harness Web UI, with a full Settings page for wallpaper and window material (wallpaper stored on the Host, not bundled).",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -48,7 +48,8 @@
       "platform": "web",
       "immediately": true,
       "inject": [
-        "@deepseek-ai/dsh-client-ui-theme"
+        "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-settings"
       ]
     }
   },
