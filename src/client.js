@@ -552,10 +552,15 @@ section[data-testid="task-manager-page"] div:has(> h1) button:disabled,
    which reads as a warm band around the search field on the glass page. Let
    the glass through; the blur keeps the row legible when results scroll
    underneath it. */
+/* The market floats its search row over the results while scrolling. A fully
+   transparent head let the cards show through it; give it a frosted cover
+   that matches the glass. The blur is static, so it does not take part in the
+   material sliders' repaint path. */
 [data-dsh-market-plugins-tab="true"] [class*="_stickyHead"] {
-  background: transparent !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  background: rgba(236, 233, 216, 0.35) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.02);
+  backdrop-filter: blur(12px) saturate(1.02);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 }
 
 /* ---- desktop caption: the native 40px drag strip ----------------------- */
