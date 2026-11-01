@@ -1,0 +1,58 @@
+{
+  "name": "@local/dsh-xp-luna",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Windows XP Luna skin for the DeepSeek Harness Web UI, with a local-only wallpaper picker and no bundled wallpapers.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BH8GCJ/dsh-xp-luna.git"
+  },
+  "homepage": "https://github.com/BH8GCJ/dsh-xp-luna#readme",
+  "bugs": {
+    "url": "https://github.com/BH8GCJ/dsh-xp-luna/issues"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "theme",
+    "skin",
+    "windows-xp",
+    "luna",
+    "wallpaper"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "src/client.js",
+    "scripts/build.mjs",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-theme"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
