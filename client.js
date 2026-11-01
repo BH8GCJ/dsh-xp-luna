@@ -829,8 +829,9 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
         window: '窗口材质',
         alpha: '窗口不透明度',
         blur: '背景模糊',
-        save: '保存设置',
-        saved: '设置已保存。',
+        autoSaving: '正在自动保存…',
+        autoSaved: '已自动保存。',
+        autoHint: '拖动即时生效，松开后自动保存。',
         saveFailed: '保存失败，请稍后重试。',
         wallpaperSaved: '壁纸已保存。',
         wallpaperFailed: '壁纸操作失败，请稍后重试。',
@@ -857,8 +858,9 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
         window: 'Window material',
         alpha: 'Window opacity',
         blur: 'Backdrop blur',
-        save: 'Save settings',
-        saved: 'Settings saved.',
+        autoSaving: 'Saving automatically…',
+        autoSaved: 'Saved automatically.',
+        autoHint: 'Changes apply as you drag and save automatically.',
         saveFailed: 'Could not save the settings. Try again.',
         wallpaperSaved: 'Wallpaper saved.',
         wallpaperFailed: 'The wallpaper operation failed. Try again.',
@@ -912,12 +914,18 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
       const [preview, setPreview] = React.useState(0);
       const [dimensions, setDimensions] = React.useState(null);
       const file = React.useRef(null);
+      const timer = React.useRef(null);
+      const latest = React.useRef(null);
+      const sequence = React.useRef(0);
 
       React.useEffect(() => {
         let alive = true;
         fetchRemoteSettings()
           .then((value) => {
-            if (alive) setSettings(value);
+            if (alive) {
+              latest.current = value;
+              setSettings(value);
+            }
           })
           .catch(() => {
             if (!alive) return;
@@ -929,33 +937,55 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
         };
       }, []);
 
+      // Flush the last slider position if the page closes during the debounce.
+      React.useEffect(() => () => {
+        if (timer.current !== null) {
+          window.clearTimeout(timer.current);
+          timer.current = null;
+          const pending = latest.current;
+          if (pending !== null) void persist(pending, ++sequence.current);
+        }
+      }, []);
+
       if (settings === null) {
         return h('p', { className: 'xp-settings__loading' }, text.loading);
       }
 
-      const update = (key, value) => setSettings((current) => ({ ...current, [key]: value }));
-
-      const save = async () => {
-        setBusy(true);
-        setStatus('');
+      const update = (key, value) => {
+        const next = { ...settings, [key]: value };
+        latest.current = next;
+        setSettings(next);
+        applyRemoteSettings(next);
         setError('');
+        setStatus(text.autoSaving);
+        const seq = ++sequence.current;
+        if (timer.current !== null) window.clearTimeout(timer.current);
+        timer.current = window.setTimeout(() => {
+          timer.current = null;
+          void persist(next, seq);
+        }, 300);
+      };
+
+      async function persist(next, seq) {
         try {
           const response = await fetch(SETTINGS_ROUTE, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ alpha: settings.alpha, blur: settings.blur }),
+            body: JSON.stringify({ alpha: next.alpha, blur: next.blur }),
           });
           if (!response.ok) throw new Error('http ' + response.status);
           const saved = await response.json();
-          setSettings(saved);
-          applyRemoteSettings(saved);
-          setStatus(text.saved);
+          if (seq !== sequence.current) return;
+          // Keep the wallpaper flag owned by upload/remove; only the material
+          // values belong to this save.
+          setSettings((current) => ({ ...current, alpha: saved.alpha, blur: saved.blur }));
+          latest.current = { ...latest.current, alpha: saved.alpha, blur: saved.blur };
+          setStatus(text.autoSaved);
         } catch (failure) {
+          if (seq !== sequence.current) return;
           setError(text.saveFailed);
-        } finally {
-          setBusy(false);
         }
-      };
+      }
 
       const upload = async (picked) => {
         if (!/^image\/(jpeg|jpg|png|webp)$/.test(picked.type)) {
@@ -973,6 +1003,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
           });
           if (!response.ok) throw new Error('http ' + response.status);
           const next = { ...settings, wallpaper: true };
+          latest.current = next;
           setSettings(next);
           setPreview(Date.now());
           setDimensions(null);
@@ -993,6 +1024,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
           const response = await fetch(WALLPAPER_ROUTE, { method: 'DELETE' });
           if (!response.ok) throw new Error('http ' + response.status);
           const next = { ...settings, wallpaper: false };
+          latest.current = next;
           setSettings(next);
           applyRemoteSettings(next);
           setStatus(text.removed);
@@ -1082,9 +1114,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
             }),
             h('span', { className: 'xp-settings__value' }, settings.blur + 'px'),
           ),
-          h('div', { className: 'xp-settings__actions' },
-            h('button', { type: 'button', className: 'xp-settings__button', disabled: busy, onClick: save }, text.save),
-          ),
+          h('p', { className: 'xp-settings__hint' }, text.autoHint),
           h('p', { className: 'xp-settings__hint' }, text.lightOnly),
         ),
         status !== '' ? h('p', { className: 'xp-settings__status' }, status) : null,
