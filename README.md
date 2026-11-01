@@ -8,6 +8,7 @@
   </p>
   <p>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"/></a>
+    <a href="https://github.com/BH8GCJ/dsh-xp-luna/releases/latest"><img src="https://img.shields.io/github/v/release/BH8GCJ/dsh-xp-luna?display_name=release&label=release" alt="release"/></a>
     <img src="https://img.shields.io/badge/platform-desktop%20%7C%20web-teal" alt="platform"/>
     <a href="https://github.com/BH8GCJ/dsh-xp-luna/stargazers"><img src="https://img.shields.io/github/stars/BH8GCJ/dsh-xp-luna?style=flat&label=stars" alt="stars"/></a>
   </p>
@@ -36,7 +37,11 @@ It is not a pixel-perfect recreation — the native window frame and the system 
 
 ### 📸 Screenshots
 
-> No real screenshot is committed yet. If you run the skin, a PR with one under `docs/` is welcome.
+| Main window | Settings page |
+|---|---|
+| ![Main window](docs/screenshot-main.png) | ![Settings page](docs/screenshot-settings.png) |
+
+> The screenshots use the built-in CSS gradient, without an imported wallpaper.
 
 ### 📦 Install
 
@@ -159,7 +164,11 @@ dsh plugin --profile desktop remove @local/dsh-xp-luna
 
 ### 📸 截图
 
-> 仓库里还没有真实截图。如果你正在使用这套皮肤，欢迎提 PR 把截图放到 `docs/` 下。
+| 主界面 | 设置页 |
+|---|---|
+| ![主界面](docs/screenshot-main.png) | ![设置页](docs/screenshot-settings.png) |
+
+> 截图使用内置 CSS 渐变，未导入壁纸。
 
 ### 📦 安装
 
