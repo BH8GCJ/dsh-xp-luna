@@ -232,19 +232,32 @@ window.__ModuleLoader__.load({
 html {
   --xp-window-alpha: 0.75;
   --xp-window-blur: 4px;
+  --xp-bg-blur: 0px;
 }
 
-/* The desktop: html paints the canvas, body repeats it so the shell CSS that
-   sets a body background cannot hide it either. No wallpaper ships with the
-   plugin: --xp-wallpaper comes from the Host settings route, and the gradient
-   below is the fallback until the user imports an image. */
+/* The desktop layer: the wallpaper lives on a fixed body pseudo-element, not
+   on the body background, so the desktop blur can be applied without
+   filtering the app UI above it. --xp-wallpaper comes from the Host settings
+   route; the gradient is the fallback until the user imports an image. */
 html, body {
+  background-color: #245EDC;
+  background-image: none;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -64px;
+  z-index: -1;
   background-color: #245EDC;
   background-image: var(--xp-wallpaper, linear-gradient(180deg, #4A9BF7 0%, #9CC4F2 48%, #A9C87E 52%, #6E9C46 100%));
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  filter: blur(var(--xp-bg-blur));
+  pointer-events: none;
+  will-change: filter;
 }
 
 /* The shell paint stops at the frame so the desktop shows around the window.
@@ -834,7 +847,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
     const SETTINGS_ROUTE = '/dsh-xp-luna/settings';
     const WALLPAPER_ROUTE = '/dsh-xp-luna/wallpaper';
     const WALLPAPER_OFFICIAL = 'https://microsoft.design/wp-content/uploads/2025/08/microsoft_nostalgic.zip';
-    const DEFAULT_SETTINGS = { alpha: 0.75, blur: 4 };
+    const DEFAULT_SETTINGS = { alpha: 0.75, blur: 4, backgroundBlur: 0 };
 
     const LUNA_TEXT = {
       zh: {
@@ -850,9 +863,10 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
         recommended: '推荐：Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg（微软官方 4K 怀旧壁纸包）。插件不附带、不自动下载；请从微软官方下载解压后导入。',
         supports: '支持 JPG、JPEG、PNG、WebP；也可以导入你自己的 Bliss.jpg。请确保你有权使用该图片。',
         small: '这张图只有 {0}×{1}，铺满窗口可能显得模糊；建议使用 1920×1080 以上的图片。',
-        window: '窗口材质',
+        window: '窗口与背景',
         alpha: '窗口不透明度',
-        blur: '背景模糊',
+        blur: '窗口背景模糊',
+        backgroundBlur: '桌面背景模糊',
         autoSaving: '正在自动保存…',
         autoSaved: '已自动保存。',
         autoHint: '拖动即时生效，松开后自动保存。',
@@ -879,9 +893,10 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
         recommended: 'Recommended: Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg from Microsoft’s official 4K nostalgic wallpaper pack. This plugin does not bundle or download it; download it from Microsoft and import the extracted JPG.',
         supports: 'JPG, JPEG, PNG and WebP are supported; your own Bliss.jpg works too. Make sure you have the right to use the image.',
         small: 'This image is only {0}×{1}; it may look blurry when stretched. 1920×1080 or larger is recommended.',
-        window: 'Window material',
+        window: 'Window & background',
         alpha: 'Window opacity',
-        blur: 'Backdrop blur',
+        blur: 'Window blur',
+        backgroundBlur: 'Desktop blur',
         autoSaving: 'Saving automatically…',
         autoSaved: 'Saved automatically.',
         autoHint: 'Changes apply as you drag and save automatically.',
@@ -913,8 +928,10 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
       const root = document.documentElement;
       const alpha = typeof settings?.alpha === 'number' ? Math.min(1, Math.max(0.5, settings.alpha)) : DEFAULT_SETTINGS.alpha;
       const blur = typeof settings?.blur === 'number' ? Math.min(20, Math.max(0, Math.round(settings.blur))) : DEFAULT_SETTINGS.blur;
+      const backgroundBlur = typeof settings?.backgroundBlur === 'number' ? Math.min(20, Math.max(0, Math.round(settings.backgroundBlur))) : DEFAULT_SETTINGS.backgroundBlur;
       root.style.setProperty('--xp-window-alpha', String(alpha));
       root.style.setProperty('--xp-window-blur', blur + 'px');
+      root.style.setProperty('--xp-bg-blur', backgroundBlur + 'px');
       if (settings?.wallpaper !== true) {
         root.style.removeProperty('--xp-wallpaper');
         return;
@@ -1004,15 +1021,19 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
           const response = await fetch(SETTINGS_ROUTE, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ alpha: next.alpha, blur: next.blur }),
+            body: JSON.stringify({ alpha: next.alpha, blur: next.blur, backgroundBlur: next.backgroundBlur }),
           });
           if (!response.ok) throw new Error('http ' + response.status);
           const saved = await response.json();
           if (seq !== sequence.current) return;
           // Keep the wallpaper flag owned by upload/remove; only the material
-          // values belong to this save.
-          setSettings((current) => ({ ...current, alpha: saved.alpha, blur: saved.blur }));
-          latest.current = { ...latest.current, alpha: saved.alpha, blur: saved.blur };
+          // values belong to this save. Fall back to the value we sent when an
+          // older Host does not know a field yet.
+          const alpha = typeof saved.alpha === 'number' ? saved.alpha : next.alpha;
+          const blur = typeof saved.blur === 'number' ? saved.blur : next.blur;
+          const backgroundBlur = typeof saved.backgroundBlur === 'number' ? saved.backgroundBlur : next.backgroundBlur;
+          setSettings((current) => ({ ...current, alpha, blur, backgroundBlur }));
+          latest.current = { ...latest.current, alpha, blur, backgroundBlur };
           setStatus(text.autoSaved);
         } catch (failure) {
           if (seq !== sequence.current) return;
@@ -1146,6 +1167,19 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
               onChange: (event) => update('blur', Number(event.currentTarget.value)),
             }),
             h('span', { className: 'xp-settings__value' }, settings.blur + 'px'),
+          ),
+          h('div', { className: 'xp-settings__row' },
+            h('label', { htmlFor: 'xp-luna-bg-blur' }, text.backgroundBlur),
+            h('input', {
+              id: 'xp-luna-bg-blur',
+              type: 'range',
+              min: 0,
+              max: 20,
+              step: 1,
+              value: settings.backgroundBlur ?? 0,
+              onChange: (event) => update('backgroundBlur', Number(event.currentTarget.value)),
+            }),
+            h('span', { className: 'xp-settings__value' }, (settings.backgroundBlur ?? 0) + 'px'),
           ),
           h('p', { className: 'xp-settings__hint' }, text.autoHint),
           h('p', { className: 'xp-settings__hint' }, text.lightOnly),

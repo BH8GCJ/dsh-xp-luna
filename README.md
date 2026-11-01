@@ -67,7 +67,7 @@ This repository ships **no wallpaper files**. Open **Settings → XP Luna theme*
 The page has two parts:
 
 - **Desktop wallpaper** — preview, **Import a local image** (JPG, JPEG, PNG or WebP), **Remove wallpaper**, and the official download link. The original file is uploaded to the local Host (never to the internet) and stored in `$DSH_HOME/.dsh-xp-luna-data/`, outside the repository. It survives app restarts and the Web UI's changing port.
-- **Window material** — window opacity and backdrop blur sliders. Changes apply the moment you drag and auto-save after a short pause; there is no separate Save button. The glass is a masked wallpaper layer plus a separately composited tint (not `backdrop-filter`), so dragging opacity does not repaint the page wallpaper; dragging blur re-renders only the window layer.
+- **Window & background** — three sliders: window opacity, window blur, and desktop blur. Changes apply the moment you drag and auto-save after a short pause; there is no separate Save button. The window glass is a masked wallpaper layer plus a separately composited tint (not `backdrop-filter`), so dragging opacity does not repaint the page wallpaper. The desktop blur is its own fixed wallpaper layer (`body::before`), separate from the window layer, and blurs only the wallpaper outside the window.
 
 **Recommended default:** `Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg` from Microsoft's official 4K nostalgic wallpaper pack. Download the zip from Microsoft Design, extract the JPG, then import it on the settings page:
 
@@ -89,6 +89,7 @@ Everything else lives in `src/client.js`; rebuild with `node scripts/build.mjs` 
 |---|---|---|
 | Window opacity | **Settings → XP Luna theme** (or `--xp-window-alpha`) | `0.75` |
 | Window backdrop blur | **Settings → XP Luna theme** (or `--xp-window-blur`) | `4px` |
+| Desktop wallpaper blur | **Settings → XP Luna theme** (or `--xp-bg-blur`) | `0px` |
 | Window width | `max-width: min(1440px, 92%)` on the window rule | — |
 | Taskbar / titlebar gradients | the `taskbar` and `titlebar` `linear-gradient()` blocks | Luna blue |
 | Caption buttons | the `XP caption trio` block | blue, blue, red |
@@ -189,7 +190,7 @@ dsh plugin --profile web add github:BH8GCJ/dsh-xp-luna
 这个页面分两部分：
 
 - **桌面壁纸**——预览、**导入本地图片**（JPG、JPEG、PNG、WebP）、**移除壁纸**，以及官方下载链接。原图会上传到本机 Host（不会发往互联网），保存在 `$DSH_HOME/.dsh-xp-luna-data/`，不在仓库里；应用重启、Web 端口变化都不会丢。
-- **窗口材质**——窗口不透明度和背景模糊滑杆。拖动即时生效，停顿后自动保存，不需要再点保存按钮。玻璃是「遮罩壁纸层 + 独立合成的米色层」，不用 `backdrop-filter`：拖不透明度不会重绘页面壁纸，拖模糊也只重绘窗口这一层。
+- **窗口与背景**——三个滑杆：窗口不透明度、窗口背景模糊、桌面背景模糊。拖动即时生效，停顿后自动保存，不需要再点保存按钮。窗口玻璃是「遮罩壁纸层 + 独立合成的米色层」，不用 `backdrop-filter`：拖不透明度不会重绘页面壁纸。桌面模糊是单独的一层固定壁纸（`body::before`），和窗口层分开，只模糊窗口外的壁纸。
 
 **推荐默认壁纸**：`Microsoft_Nostalgic_Windows_Wallpaper_4k.jpg`，来自微软官方的 4K 怀旧壁纸包。请从 Microsoft Design 下载 zip、解压出 JPG，再在设置页导入：
 
@@ -211,6 +212,7 @@ dsh plugin --profile web add github:BH8GCJ/dsh-xp-luna
 |---|---|---|
 | 窗口不透明度 | **设置 → XP Luna 主题**（或 `--xp-window-alpha`） | `0.75` |
 | 窗口背景模糊 | **设置 → XP Luna 主题**（或 `--xp-window-blur`） | `4px` |
+| 桌面背景模糊 | **设置 → XP Luna 主题**（或 `--xp-bg-blur`） | `0px` |
 | 窗口宽度 | 窗口规则上的 `max-width: min(1440px, 92%)` | — |
 | 任务栏 / 标题栏渐变 | `taskbar` 与 `titlebar` 段里的 `linear-gradient()` | Luna 蓝 |
 | 三枚按钮样式 | `XP caption trio` 段 | 蓝、蓝、红 |

@@ -29,7 +29,7 @@ const UPLOAD_TMP = 'wallpaper.upload.tmp';
 const ROUTE = '/dsh-xp-luna';
 const MAX_UPLOAD = 25 * 1024 * 1024;
 const MAX_SETTINGS_BODY = 64 * 1024;
-const DEFAULT_SETTINGS = Object.freeze({ alpha: 0.75, blur: 4 });
+const DEFAULT_SETTINGS = Object.freeze({ alpha: 0.75, blur: 4, backgroundBlur: 0 });
 
 /** Resolve the DSH home without a package import, so a linked bundle works. */
 function dshHome() {
@@ -52,7 +52,8 @@ function normalizeSettings(raw) {
   const source = raw !== null && typeof raw === 'object' ? raw : {};
   const alpha = clamp(source.alpha, 0.5, 1, DEFAULT_SETTINGS.alpha);
   const blur = Math.round(clamp(source.blur, 0, 20, DEFAULT_SETTINGS.blur));
-  return { alpha, blur };
+  const backgroundBlur = Math.round(clamp(source.backgroundBlur, 0, 20, DEFAULT_SETTINGS.backgroundBlur));
+  return { alpha, blur, backgroundBlur };
 }
 
 async function readSettings() {
