@@ -902,17 +902,26 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
       return language.toLowerCase().startsWith('zh') ? LUNA_TEXT.zh : LUNA_TEXT.en;
     }
 
-    function applyRemoteSettings(settings) {
+    /**
+     * Apply the material, and touch the wallpaper only when it actually
+     * changed. Re-setting --xp-wallpaper to a cache-busted URL on every
+     * slider tick makes the browser fetch and decode the image again, which
+     * flashes the desktop colour behind the glass. `forceWallpaper` is for
+     * the import/remove actions, not for material changes.
+     */
+    function applyRemoteSettings(settings, forceWallpaper = false) {
       const root = document.documentElement;
       const alpha = typeof settings?.alpha === 'number' ? Math.min(1, Math.max(0.5, settings.alpha)) : DEFAULT_SETTINGS.alpha;
       const blur = typeof settings?.blur === 'number' ? Math.min(20, Math.max(0, Math.round(settings.blur))) : DEFAULT_SETTINGS.blur;
       root.style.setProperty('--xp-window-alpha', String(alpha));
       root.style.setProperty('--xp-window-blur', blur + 'px');
-      if (settings?.wallpaper === true) {
-        root.style.setProperty('--xp-wallpaper', 'url("' + WALLPAPER_ROUTE + '?t=' + Date.now() + '")');
-      } else {
+      if (settings?.wallpaper !== true) {
         root.style.removeProperty('--xp-wallpaper');
+        return;
       }
+      if (!forceWallpaper && root.style.getPropertyValue('--xp-wallpaper') !== '') return;
+      const suffix = forceWallpaper ? '?t=' + Date.now() : '';
+      root.style.setProperty('--xp-wallpaper', 'url("' + WALLPAPER_ROUTE + suffix + '")');
     }
 
     function clearRemoteSettings() {
@@ -1031,7 +1040,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
           setSettings(next);
           setPreview(Date.now());
           setDimensions(null);
-          applyRemoteSettings(next);
+          applyRemoteSettings(next, true);
           setStatus(text.wallpaperSaved);
         } catch (failure) {
           setError(text.wallpaperFailed);
