@@ -552,15 +552,37 @@ section[data-testid="task-manager-page"] div:has(> h1) button:disabled,
    which reads as a warm band around the search field on the glass page. Let
    the glass through; the blur keeps the row legible when results scroll
    underneath it. */
-/* The market floats its search row over the results while scrolling. A fully
-   transparent head let the cards show through it; give it a frosted cover
-   that matches the glass. The blur is static, so it does not take part in the
-   material sliders' repaint path. */
+/* The market floats its search row over the results while scrolling. Instead
+   of a flat beige strip, give the row its own copy of the glass: the same
+   wallpaper, blur and tint as the window. It covers the cards behind it and
+   keeps the same colour as the rest of the window. */
 [data-dsh-market-plugins-tab="true"] [class*="_stickyHead"] {
-  background: rgba(236, 233, 216, 0.35) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(1.02);
-  backdrop-filter: blur(12px) saturate(1.02);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  background: transparent !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.10);
+}
+[data-dsh-market-plugins-tab="true"] [class*="_stickyHead"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--xp-wallpaper, linear-gradient(180deg, #4A9BF7 0%, #9CC4F2 48%, #A9C87E 52%, #6E9C46 100%));
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  filter: blur(var(--xp-window-blur));
+  pointer-events: none;
+}
+[data-dsh-market-plugins-tab="true"] [class*="_stickyHead"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #ECE9D8;
+  opacity: var(--xp-window-alpha);
+  pointer-events: none;
 }
 
 /* ---- desktop caption: the native 40px drag strip ----------------------- */
