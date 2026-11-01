@@ -313,31 +313,53 @@ div:has(> [data-shell-overlay]) > div:nth-child(2) {
   width: 100%;
   justify-self: center;
   margin: 14px 0;
+  box-sizing: border-box;
   background: #ECE9D8;
+  border: 1px solid #8A8678;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow:
-    inset 0 0 0 1px #8A8678,
-    inset 0 0 0 2px rgba(255, 255, 255, 0.55),
-    0 14px 34px rgba(0, 0, 0, 0.38);
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
 }
 
 /* Glass for the conversation, the Plugins page and the automation tasks
    page. Other management pages (Settings, ...) keep the opaque work surface
    so their lists stay readable. */
 div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"]) {
-  background: rgba(236, 233, 216, var(--xp-window-alpha));
-  -webkit-backdrop-filter: blur(var(--xp-window-blur)) saturate(1.04);
-  backdrop-filter: blur(var(--xp-window-blur)) saturate(1.04);
+  background: transparent;
 }
 
-/* The plugin page sits on the same glass, but its long forms and toolbars
-   make the wallpaper's cloud bank read as a warm band around the search row.
-   Give this page a calmer glass: a little more beige, a little more blur. */
-div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-plugin-bar]) {
-  background: rgba(236, 233, 216, 0.9);
-  -webkit-backdrop-filter: blur(8px) saturate(1.02);
-  backdrop-filter: blur(8px) saturate(1.02);
+/* The glass is a masked wallpaper layer, not a backdrop-filter. A backdrop
+   filter re-samples the page wallpaper on every style change, which repaints
+   the image while a slider is dragged. Here the blurred copy is painted once
+   in its own layer; changing the blur re-renders only this layer, and the
+   tint below is a separate layer whose opacity is composited. The fixed
+   attachment keeps the copy aligned with the sharp wallpaper outside. */
+div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::before {
+  content: "";
+  position: absolute;
+  inset: -64px;
+  z-index: -1;
+  background-image: var(--xp-wallpaper, linear-gradient(180deg, #4A9BF7 0%, #9CC4F2 48%, #A9C87E 52%, #6E9C46 100%));
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  filter: blur(var(--xp-window-blur));
+  pointer-events: none;
+  will-change: filter;
+}
+
+div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #ECE9D8;
+  opacity: var(--xp-window-alpha);
+  pointer-events: none;
+  will-change: opacity;
 }
 
 /* Respect the OS reduced-transparency preference: keep the layout but fall
@@ -345,8 +367,10 @@ div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-plugin-bar]) {
 @media (prefers-reduced-transparency: reduce) {
   div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"]) {
     background: #ECE9D8;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+  }
+  div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::before,
+  div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::after {
+    display: none;
   }
 }
 
