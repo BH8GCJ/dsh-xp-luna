@@ -9,8 +9,14 @@ approved, or endorsed this project.
 
 This repository and its release packages **do not contain any wallpaper
 images**. All wallpapers are supplied by the user from their own device and
-are stored locally in the browser (localStorage); they are never uploaded,
+stored locally in the DSH data directory on this machine
+(`$DSH_HOME/.dsh-xp-luna-data/`); they are never uploaded off the machine,
 bundled, or redistributed by this plugin.
+
+This project **does not host or mirror Microsoft wallpaper files**. The
+settings page only links to Microsoft's official download source, and
+downloading is user-initiated — the plugin never downloads a wallpaper
+automatically.
 
 The following images are referenced by name in the UI and documentation only:
 
@@ -46,7 +52,11 @@ third-party materials are excluded.
 本仓库及其文档不表示微软授权、认可或赞助本项目。
 
 本仓库及发布包**不包含任何壁纸文件**。壁纸由用户从自己的设备提供，仅保存在
-本机浏览器（localStorage）中，插件不会上传、打包或再分发这些图片。
+本机的 DSH 数据目录（`$DSH_HOME/.dsh-xp-luna-data/`）中，插件不会上传到本机之外、
+不会打包或再分发这些图片。
+
+本项目**不托管、不镜像微软壁纸文件**。设置页只链接到微软官方下载源，下载由用户
+主动触发，插件不会自动下载壁纸。
 
 文档和界面中提到的以下图片仅为名称引用：
 
