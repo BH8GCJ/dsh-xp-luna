@@ -272,6 +272,19 @@ option {
   color-scheme: light !important;
 }
 
+/* On a dark desktop (BreezeDark, GNOME prefer-dark) the native popup follows
+   the OS palette while the plugin card paints dark, so a forced light scheme
+   leaves the option list light with light text. Let the control follow the
+   system scheme there; a light desktop keeps the white control above. */
+@media (prefers-color-scheme: dark) {
+  select,
+  option {
+    color: #F5F5F5 !important;
+    background-color: #1F1F1F !important;
+    color-scheme: dark !important;
+  }
+}
+
 body::before {
   content: "";
   position: fixed;

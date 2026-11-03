@@ -1,4 +1,4 @@
-# XP Luna v1.3.10 — compatibility fixes
+# XP Luna v1.3.11 — dark-desktop select fix
 
 Fixes for the official **DSH 0.2.1-rc.5** build, including its Windows desktop
 window, while keeping the existing 0.2.2-alpha behaviour.
@@ -21,10 +21,10 @@ window, while keeping the existing 0.2.2-alpha behaviour.
 - **Tooltip text**: the XP yellow tooltip bubble kept white text from a static
   primitive token; the bubble now uses dark ink, scoped to tooltips only so no
   other surface changes.
-- **Native selects**: plugin pages that use a native `<select>` (e.g.
-  billion-context's version picker) no longer show near-white options on a
-  white popup. The plugin's own class rule outranked the element selector, so
-  the control is now pinned explicitly.
+- **Native selects on dark desktops**: the version picker now follows the
+  system colour scheme. On a light desktop the control stays white with dark
+  ink; on BreezeDark / GNOME `prefer-dark` it uses a dark popup with light
+  text instead of a white list with near-white options.
 - **Session "more" menu**: the menu renders inline inside the blue header, so
   it inherited the white caption label tokens and the caption-button paint;
   it now uses dark ink and flat menu rows.
