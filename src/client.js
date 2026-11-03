@@ -284,6 +284,9 @@ div:has(> [data-shell-overlay]) > div:first-child {
 
   --dsw-specific-sidebar-fill: transparent;
   --dsw-alias-label-primary: #FFFFFF;
+  /* Inverted labels sit on white fills in the taskbar (the build-version
+     pill), so they need a dark ink rather than the global white. */
+  --dsw-alias-label-primary-inverted: #0B2E63;
   --dsw-alias-label-primary-dimmed: #FFFFFF;
   --dsw-alias-label-secondary: rgba(255, 255, 255, 0.88);
   --dsw-alias-label-tertiary: rgba(255, 255, 255, 0.78);
@@ -323,6 +326,18 @@ div:has(> [data-shell-overlay]) > div:first-child {
   --dsw-alias-focus-ring-color: #FFFFFF;
 }
 
+/* The official wordmark draws "deepseek" with currentColor and the
+   "Harness" badge as a currentColor rectangle whose letters use the
+   inverted-label token. On the blue taskbar currentColor is white, which
+   turned the badge into a white pill with invisible white letters. Keep the
+   brand's dark badge and white letters instead. */
+div:has(> [data-shell-overlay]) > div:first-child [class*="_brandName"] svg > rect {
+  fill: #0B2E63;
+}
+div:has(> [data-shell-overlay]) > div:first-child [class*="_brandName"] svg path[fill^="var("] {
+  fill: #FFFFFF;
+}
+
 /* ---- window: the centre column ----------------------------------------- */
 div:has(> [data-shell-overlay]) > div:nth-child(2) {
   /* The host derives the transcript width as clamp(680, column * 0.64, 920),
@@ -342,10 +357,11 @@ div:has(> [data-shell-overlay]) > div:nth-child(2) {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
 }
 
-/* Glass for the conversation, the Plugins page and the automation tasks
-   page. Other management pages (Settings, ...) keep the opaque work surface
-   so their lists stay readable. */
-div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"]) {
+/* Glass for the window. It used to be limited to pages that carried a
+   conversation, plugin-bar or task-manager marker, but DSH 0.2.1-rc.5 ships
+   some of those pages without the marker, which silently disabled the
+   opacity slider there. Apply the material to the whole window instead. */
+div:has(> [data-shell-overlay]) > div:nth-child(2) {
   background: transparent;
 }
 
@@ -355,7 +371,7 @@ div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-conten
    in its own layer; changing the blur re-renders only this layer, and the
    tint below is a separate layer whose opacity is composited. The fixed
    attachment keeps the copy aligned with the sharp wallpaper outside. */
-div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::before {
+div:has(> [data-shell-overlay]) > div:nth-child(2)::before {
   content: "";
   position: absolute;
   inset: -64px;
@@ -370,7 +386,7 @@ div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-conten
   will-change: filter;
 }
 
-div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::after {
+div:has(> [data-shell-overlay]) > div:nth-child(2)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -381,17 +397,10 @@ div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-conten
   will-change: opacity;
 }
 
-/* Respect the OS reduced-transparency preference: keep the layout but fall
-   back to an opaque window instead of the glass. */
-@media (prefers-reduced-transparency: reduce) {
-  div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"]) {
-    background: #ECE9D8;
-  }
-  div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::before,
-  div:has(> [data-shell-overlay]) > div:nth-child(2):has([data-conversation-content], [data-plugin-bar], [data-testid="task-manager-page"])::after {
-    display: none;
-  }
-}
+/* The glass is a visual choice made in the theme settings. Do not fall back
+   to an opaque window when the OS reports reduced transparency: Windows
+   Server and many desktops disable transparency effects by default, which
+   silently made the opacity slider do nothing there. */
 
 /* ---- Plugins page: the same Luna titlebar over the glass ------------- */
 /* The page bar paints the full-width band; the page's own header sits on it,
@@ -602,6 +611,16 @@ html[data-windows-titlebar] div:has(> [data-shell-overlay])::before {
   --dsw-alias-label-secondary: rgba(255, 255, 255, 0.92);
   --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, 0.24);
   --dsw-alias-state-business-primary: #FFFFFF;
+}
+
+/* The Desktop preload samples the native caption palette from an invisible
+   probe appended to <body>: it reads --dsw-specific-sidebar-fill for the
+   strip and --dsw-alias-label-primary for the glyphs. That token is black in
+   our light document, so the Windows minimize/maximize/close glyphs were
+   black on the blue strip. The probe carries this fixed inline signature;
+   force the symbols to white without touching the document ink. */
+body > span[style*="visibility: hidden"][style*="pointer-events: none"] {
+  color: #FFFFFF !important;
 }
 
 /* The conversation canvas repaints the base colour itself. Clear only that
