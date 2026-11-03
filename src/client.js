@@ -251,10 +251,11 @@ body {
 }
 
 /* Tooltips keep the XP pale-yellow bubble, but the primitives colour their
-   text with this static token, which is white in every theme. White on
-   #FFFFE1 is invisible, so give the bubble dark ink. */
-body {
-  --dsw-static-neutral-bluish-00: #1A1A1A;
+   text with a static white token. Target the bubble itself (role="tooltip")
+   instead of the static palette: overriding that palette would also darken
+   surfaces such as bg-base and the toast label. */
+[role="tooltip"] {
+  color: #1A1A1A !important;
 }
 
 /* Native selects used by plugin pages (e.g. billion-context's version

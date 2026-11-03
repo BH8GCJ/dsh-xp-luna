@@ -1,4 +1,4 @@
-# XP Luna v1.3.7 — compatibility fixes
+# XP Luna v1.3.8 — compatibility fixes
 
 Fixes for the official **DSH 0.2.1-rc.5** build, including its Windows desktop
 window, while keeping the existing 0.2.2-alpha behaviour.
@@ -19,7 +19,8 @@ window, while keeping the existing 0.2.2-alpha behaviour.
   titlebar colours from the document; the minimize/maximize/close glyphs were
   black on the blue strip and are now white.
 - **Tooltip text**: the XP yellow tooltip bubble kept white text from a static
-  primitive token; the bubble now uses dark ink.
+  primitive token; the bubble now uses dark ink, scoped to tooltips only so no
+  other surface changes.
 - **Native selects**: plugin pages that use a native `<select>` (e.g.
   billion-context's version picker) no longer show near-white options on a
   white popup.
