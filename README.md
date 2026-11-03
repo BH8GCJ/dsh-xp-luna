@@ -132,7 +132,7 @@ Selectors use only stable host attributes, never hashed CSS-module class names:
 - The glass covers the conversation, the Plugins page and the automation tasks page; other management pages (Settings, ...) keep an opaque work surface. The composer seat's beige fade is cleared so the glass shows through; the composer card, compaction and disclosure headers keep their own surfaces.
 - **No wallpaper ships with the plugin.** Without an import, the desktop uses the gradient fallback; wallpapers are user-provided and must comply with their own copyright terms. Small images are stretched by `background-size: cover`; the settings page warns under 1920 px wide.
 - The Host half registers the wallpaper/settings routes at startup; after upgrading the plugin, restart the desktop app once.
-- **Native `<select>` popups on dark Linux desktops.** Some plugin pages (for example billion-context's version picker) use a native `<select>`. With KDE BreezeDark or GNOME `prefer-dark`, the platform popup can stay light while the plugin card is dark, so the option list is hard to read; the popup is drawn by the platform and ignores the theme CSS. Workaround: switch the desktop to a light colour scheme, or open the Web UI in a browser (the popup then follows the page's `color-scheme`). A self-drawn dropdown is planned.
+- **Plugin UIs in their own frame on dark Linux desktops.** Plugin pages such as billion-context are framed by the host (`?embed=1`), and the theme's CSS cannot style controls inside that frame. With KDE BreezeDark or GNOME `prefer-dark`, the frame follows the OS dark palette while Harness itself stays light, so a native `<select>` can end up with light text on a light popup (for example billion-context's version picker). Workaround: switch the desktop to a light colour scheme, or open the plugin's Web UI in a browser tab. A real fix has to come from the plugin or the host, not from the theme.
 - **Fully restart after an update.** The client bundle is read when Harness starts; a page refresh does not load new CSS, and the beige glass can look wrong until the app is reopened.
 
 ### 🗑 Uninstall
@@ -261,7 +261,7 @@ Client 端做三件事；令牌层和样式表只在浅色模式下安装，设�
 - 玻璃只作用于会话区、插件页和自动化任务页；设置等其他管理页保持不透明米色。输入框底座的米色渐隐已清掉，让玻璃透出来；输入框卡片、压缩/折叠标题保留自己的表面。
 - **插件不附带壁纸。** 没有导入时桌面使用渐变底色；导入的壁纸由用户提供，需自行确保版权与使用许可。小图片会被 `background-size: cover` 拉伸，设置页在宽度小于 1920px 时会提示。
 - 壁纸/设置路由在 Host 半边启动时注册；升级插件后请重启一次桌面应用。
-- **Linux 深色桌面上的原生 `<select>` 弹出层。** 部分插件页（例如 billion-context 的版本选择）使用原生 `<select>`。KDE BreezeDark 或 GNOME `prefer-dark` 下，弹出层可能保持浅色而插件卡片是深色，选项难以辨认；该弹出层由平台绘制，不读取主题 CSS。临时办法：把桌面切到浅色方案，或在浏览器里打开 Web UI（弹出层会跟随页面的 `color-scheme`）。计划改为自绘下拉框。
+- **Linux 深色桌面上的插件内嵌框架。** 插件页（例如 billion-context）由宿主以 `?embed=1` 嵌入独立框架，主题 CSS 无法作用于框架内部控件。KDE BreezeDark 或 GNOME `prefer-dark` 下，框架跟随系统深色调色板，而 Harness 本身是浅色，于是原生 `<select>` 可能出现浅色文字配浅色弹出层（例如 billion-context 的版本选择）。临时办法：把桌面切到浅色方案，或在浏览器标签页里打开插件 Web UI。真正的修复需要插件或宿主来做，主题这边做不到。
 - **升级后请完全重启。** client bundle 在 Harness 启动时读取；只刷新页面不会加载新 CSS，米黄玻璃层可能看起来不对，重新打开应用后恢复。
 
 ### 🗑 卸载
