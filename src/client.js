@@ -749,6 +749,28 @@ div:has(+ [data-conversation-header-corner]) [data-open-target] button {
   box-shadow: none;
 }
 
+/* The session "more" menu renders inline inside the header, whose label
+   tokens are white for the blue caption band, and its buttons inherited the
+   caption-button paint. Put the menu surface back on dark ink and a flat
+   item background so the menu reads as a menu. */
+[data-menu-material] {
+  --dsw-alias-label-primary: #1A1A1A;
+  --dsw-alias-label-secondary: #4A4A44;
+  --dsw-alias-label-caption: #5A5A52;
+  --dsw-alias-menu-icon: #1A1A1A;
+  --dsw-alias-interactive-bg-hover: rgba(49, 106, 197, 0.10);
+}
+[data-menu-material] [role="menuitem"] {
+  border: 0 !important;
+  border-radius: var(--dsw-radius-md, 6px) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #1A1A1A !important;
+}
+[data-menu-material] [role="menuitem"]:hover {
+  background: rgba(49, 106, 197, 0.10) !important;
+}
+
 /* Optional: keep the header's right-hand trio down to three controls by
    hiding the schedule trigger in this row only (sidebar marks keep it).
    Delete this rule to bring the button back. */

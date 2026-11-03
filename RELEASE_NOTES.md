@@ -1,4 +1,4 @@
-# XP Luna v1.3.8 — compatibility fixes
+# XP Luna v1.3.9 — compatibility fixes
 
 Fixes for the official **DSH 0.2.1-rc.5** build, including its Windows desktop
 window, while keeping the existing 0.2.2-alpha behaviour.
@@ -24,6 +24,9 @@ window, while keeping the existing 0.2.2-alpha behaviour.
 - **Native selects**: plugin pages that use a native `<select>` (e.g.
   billion-context's version picker) no longer show near-white options on a
   white popup.
+- **Session "more" menu**: the menu renders inline inside the blue header, so
+  it inherited the white caption label tokens and the caption-button paint;
+  it now uses dark ink and flat menu rows.
 
 Settings, wallpaper import, the Host data directory and the plugin-market
 sticky header are unchanged.
