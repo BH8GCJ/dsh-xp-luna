@@ -264,9 +264,12 @@ body {
    dark ink so both the control and its list stay readable. */
 select,
 option {
-  color: #1A1A1A;
-  background-color: #FFFFFF;
-  color-scheme: light;
+  /* The plugin page styles its own <select> with a class, which outranks a
+     bare element selector; !important keeps the control and its popup dark
+     on white instead of inheriting the page's near-white text. */
+  color: #1A1A1A !important;
+  background-color: #FFFFFF !important;
+  color-scheme: light !important;
 }
 
 body::before {
