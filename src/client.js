@@ -258,6 +258,14 @@ body {
   color: #1A1A1A !important;
 }
 
+/* Question options mark a recommended choice with a small chip that uses the
+   sidebar accent as its background and the info-button fill as its text.
+   Both are blue in Luna, so the label disappeared into the chip. */
+[data-option-row] [class*="_badge"] {
+  background-color: #316AC5 !important;
+  color: #FFFFFF !important;
+}
+
 /* Native selects used by plugin pages (e.g. billion-context's version
    picker) inherit the page colour while Chromium opens a light popup; on a
    dark card that produced white options on white. Pin the light scheme and
