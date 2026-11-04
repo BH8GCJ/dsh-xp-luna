@@ -1044,9 +1044,20 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
       },
     };
 
+    /** Locale service, resolved optionally so the theme also mounts on hosts without it. */
+    let localeFace;
+
+    function activeLocale() {
+      try {
+        const snapshot = localeFace?.getSnapshot?.();
+        if (snapshot && typeof snapshot.active === 'string') return snapshot.active;
+      } catch {}
+      const documentLanguage = typeof document !== 'undefined' ? document.documentElement.lang : '';
+      return typeof documentLanguage === 'string' ? documentLanguage : '';
+    }
+
     function lunaText() {
-      const language = typeof navigator !== 'undefined' && typeof navigator.language === 'string' ? navigator.language : '';
-      return language.toLowerCase().startsWith('zh') ? LUNA_TEXT.zh : LUNA_TEXT.en;
+      return activeLocale().toLowerCase().startsWith('zh') ? LUNA_TEXT.zh : LUNA_TEXT.en;
     }
 
     /**
@@ -1095,10 +1106,16 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
       const [error, setError] = React.useState('');
       const [preview, setPreview] = React.useState(0);
       const [dimensions, setDimensions] = React.useState(null);
+      const [, setLocaleRevision] = React.useState(0);
       const file = React.useRef(null);
       const timer = React.useRef(null);
       const latest = React.useRef(null);
       const sequence = React.useRef(0);
+
+      React.useEffect(() => {
+        if (!localeFace || typeof localeFace.subscribe !== 'function') return undefined;
+        return localeFace.subscribe(() => setLocaleRevision((value) => value + 1));
+      }, []);
 
       React.useEffect(() => {
         let alive = true;
@@ -1336,6 +1353,12 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
     return {
       inject: ['theme', 'slots'],
       apply(ctx) {
+        try {
+          localeFace = ctx.get?.('locale');
+        } catch {
+          localeFace = undefined;
+        }
+
         ctx.slots.inject('settings.section', () =>
           ctx.slots.register({
             name: 'settings.section',
