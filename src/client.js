@@ -365,12 +365,14 @@ div:has(> [data-shell-overlay]) > div:first-child {
    "Harness" badge as a currentColor rectangle whose letters use the
    inverted-label token. On the blue taskbar currentColor is white, which
    turned the badge into a white pill with invisible white letters. Keep the
-   brand's dark badge and white letters instead. */
+   badge a white pill with dark ink in both colour schemes: the stock dark
+   theme paints it exactly that way, so a dark pill here would make the badge
+   flip colour when the user switches mode. */
 div:has(> [data-shell-overlay]) > div:first-child [class*="_brandName"] svg > rect {
-  fill: #0B2E63;
+  fill: #FFFFFF;
 }
 div:has(> [data-shell-overlay]) > div:first-child [class*="_brandName"] svg path[fill^="var("] {
-  fill: #FFFFFF;
+  fill: #0B2E63;
 }
 
 /* ---- window: the centre column ----------------------------------------- */
@@ -633,7 +635,12 @@ section[data-testid="task-manager-page"] div:has(> h1) button:disabled,
 /* The Desktop shell reserves this band on Linux and Windows; paint it with
    the same Luna gradient as the conversation header instead of a flat fill. */
 html[data-windows-titlebar] div:has(> [data-shell-overlay])::before {
-  background: linear-gradient(180deg, #4A9BF7 0%, #2A6FE0 46%, #1747A8 100%);
+  /* The native caption overlay is a solid rectangle painted by Windows over
+     the right end of this band, so the gradient has to flatten out under it;
+     otherwise the buttons sit on a visibly lighter block. */
+  background:
+    linear-gradient(90deg, rgba(42, 111, 224, 0) calc(100% - 200px), #2A6FE0 calc(100% - 170px)),
+    linear-gradient(180deg, #4A9BF7 0%, #2A6FE0 46%, #1747A8 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     inset 0 -1px 0 rgba(0, 0, 0, 0.35);
@@ -650,11 +657,14 @@ html[data-windows-titlebar] div:has(> [data-shell-overlay])::before {
 
 /* The Desktop preload samples the native caption palette from an invisible
    probe appended to <body>: it reads --dsw-specific-sidebar-fill for the
-   strip and --dsw-alias-label-primary for the glyphs. That token is black in
-   our light document, so the Windows minimize/maximize/close glyphs were
-   black on the blue strip. The probe carries this fixed inline signature;
-   force the symbols to white without touching the document ink. */
-body > span[style*="visibility: hidden"][style*="pointer-events: none"] {
+   strip and --dsw-alias-label-primary for the glyphs. The Web UI can set that
+   token inline on <body>, which beats a token override, so the strip came out
+   white; the probe also renders its cssText without spaces after the colons,
+   which the old spaced attribute selector never matched. Force both values on
+   the probe element itself and match the actual inline signature. */
+body > span[style*="position:fixed"][style*="visibility:hidden"][style*="pointer-events:none"],
+body > span[style*="position: fixed"][style*="visibility: hidden"][style*="pointer-events: none"] {
+  background-color: #2A6FE0 !important;
   color: #FFFFFF !important;
 }
 

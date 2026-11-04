@@ -1,48 +1,29 @@
-# XP Luna v1.3.11 — dark-desktop select fix
+# XP Luna v1.3.12 — Windows caption strip + HARNESS badge
 
-Fixes for the official **DSH 0.2.1-rc.5** build, including its Windows desktop
-window, while keeping the existing 0.2.2-alpha behaviour.
+Fixes the two regressions reported on a clean Windows 11 install of the
+official **DSH 0.2.1-rc.5** desktop build.
 
 ## Highlights
 
-- **Brand badge restored**: the official wordmark paints its "Harness" badge
-  with `currentColor` and inverts the letters. On the blue taskbar that became
-  a white pill with white letters; the badge is dark again with white text,
-  and inverted labels (the local build-version pill) use dark ink.
-- **Opacity works on every page**: the glass is no longer limited to pages
-  that carry a conversation/plugin/task marker (0.2.1-rc.5 ships some pages
-  without them), so the opacity slider visibly changes the whole window.
-- **Opacity works with OS transparency off**: the theme no longer falls back
-  to an opaque window under `prefers-reduced-transparency`, which Windows
-  Server and many desktops report by default.
-- **Native Windows caption glyphs**: the desktop preload samples the native
-  titlebar colours from the document; the minimize/maximize/close glyphs were
-  black on the blue strip and are now white.
-- **Tooltip text**: the XP yellow tooltip bubble kept white text from a static
-  primitive token; the bubble now uses dark ink, scoped to tooltips only so no
-  other surface changes.
-- **Native selects on dark desktops**: the version picker now follows the
-  system colour scheme. On a light desktop the control stays white with dark
-  ink; on BreezeDark / GNOME `prefer-dark` it uses a dark popup with light
-  text instead of a white list with near-white options.
-- **Session "more" menu**: the menu renders inline inside the blue header, so
-  it inherited the white caption label tokens and the caption-button paint;
-  it now uses dark ink and flat menu rows.
-
-Settings, wallpaper import, the Host data directory and the plugin-market
-sticky header are unchanged.
+- **Native caption buttons on Windows 11**: the Desktop preload samples the
+  titlebar colours from an invisible probe on `<body>`. Its `cssText` writes
+  `visibility:hidden` without a space, so the old attribute selector never
+  matched and the glyphs stayed dark. The probe is now matched on its actual
+  signature, with white glyphs and a `#2A6FE0` strip forced on the element
+  itself, and the Luna gradient flattens under the native overlay so the
+  buttons no longer sit on a white block.
+- **HARNESS badge**: the official wordmark inverts the badge letters while the
+  badge rectangle follows `currentColor`. The badge is now a white pill with
+  dark ink in both colour schemes, matching the stock dark theme instead of
+  flipping to a dark pill in light mode.
+- Everything from 1.3.11 (glass on every page, tooltip ink, session menu,
+  dark-desktop selects) is carried over.
 
 ## Install
 
-**Plugins → Add plugin** → `https://github.com/BH8GCJ/dsh-xp-luna`, or:
-
-```sh
-dsh plugin --profile desktop add github:BH8GCJ/dsh-xp-luna
-```
-
-Update an existing install from the Plugins page, or re-add the plugin. After
-updating into a running desktop app, restart it once so the Host routes and
-the new client bundle load.
+Update from the Plugins page, or re-add the plugin. After updating a running
+desktop app, **fully restart** it: the client bundle is loaded at boot, so a
+page refresh alone keeps the previous bundle.
 
 ## Licensing
 
@@ -55,17 +36,16 @@ endorsed by, or sponsored by Microsoft. See
 
 ## 中文
 
-修复官方 **DSH 0.2.1-rc.5**（含 Windows 桌面窗口）下的显示问题，同时保持
-0.2.2-alpha 的现有表现：
+修复全新安装的 Windows 11 上、官方 **DSH 0.2.1-rc.5** 桌面版出现的两个问题：
 
-- 官方字标里的 “Harness” 徽章不再白底白字，恢复深色底、白字；本地构建的版本
-  徽章也改为深色文字。
-- 玻璃效果不再限定在带会话/插件/任务标记的页面，不透明度滑块在所有页面都能
-  看到变化。
-- 系统关闭“透明效果”（Windows Server 常见默认）时不再退回不透明窗口，滑块
-  因此恢复作用。
-- Windows 原生标题栏的最小化/最大化/关闭图标由黑色改为白色，与蓝色 Luna
-  标题栏一致。
+- **Windows 原生标题栏按钮**：Desktop 预载脚本用 `<body>` 上的隐藏探针取标题栏
+  颜色。它的 `cssText` 写成 `visibility:hidden`（冒号后没有空格），旧选择器一直
+  没命中，图标因此是深色。现在按真实的内联签名匹配，并在探针元素上强制白色
+  图标和 `#2A6FE0` 底色；Luna 渐变在原生覆盖层下方压平，按钮不再坐在白块上。
+- **HARNESS 徽章**：官方字标把徽章字母做反色，而徽章矩形跟随 `currentColor`。
+  现在两种配色下都固定为白色胶囊 + 深色字，和官方深色主题一致，不再在浅色
+  模式下变成深色胶囊。
 
-壁纸导入、Host 数据目录和插件市场吸顶栏保持不变。更新后请重启一次桌面应用，
-让 Host 路由和新的客户端包生效。
+1.3.11 的修复（所有页面的玻璃效果、tooltip 文字、会话菜单、深色桌面下拉框）
+全部保留。更新后请**完全退出并重新打开**桌面应用，只刷新页面不会加载新的
+客户端包。
