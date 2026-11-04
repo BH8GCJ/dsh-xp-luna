@@ -635,15 +635,18 @@ section[data-testid="task-manager-page"] div:has(> h1) button:disabled,
 /* The Desktop shell reserves this band on Linux and Windows; paint it with
    the same Luna gradient as the conversation header instead of a flat fill. */
 html[data-windows-titlebar] div:has(> [data-shell-overlay])::before {
-  /* The native caption overlay is a solid rectangle painted by Windows over
-     the right end of this band, so the gradient has to flatten out under it;
-     otherwise the buttons sit on a visibly lighter block. */
-  background:
-    linear-gradient(90deg, rgba(42, 111, 224, 0) calc(100% - 200px), #2A6FE0 calc(100% - 170px)),
-    linear-gradient(180deg, #4A9BF7 0%, #2A6FE0 46%, #1747A8 100%);
+  background: linear-gradient(180deg, #4A9BF7 0%, #2A6FE0 46%, #1747A8 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Windows draws the caption buttons on a solid rectangle of its own, and that
+   rectangle cannot carry a gradient. A gradient under it leaves a visible
+   vertical seam where the native block starts, so on Windows the whole strip
+   uses the same solid fill as the overlay. Linux keeps the Luna gradient. */
+html[data-platform="win32"][data-windows-titlebar] div:has(> [data-shell-overlay])::before {
+  background: #2A6FE0;
 }
 
 /* The Desktop shell mounts its caption menu (Application / Edit) into that

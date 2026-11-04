@@ -1,4 +1,9 @@
-# XP Luna v1.3.12 — Windows caption strip + HARNESS badge
+# XP Luna v1.3.13 — Windows caption strip + HARNESS badge
+
+Follow-up to 1.3.12: the native overlay is a solid rectangle and cannot carry
+the Luna gradient, so a gradient under it left a visible vertical seam where
+the overlay starts. On Windows the whole 40px strip now uses the same solid
+`#2A6FE0` as the overlay; Linux keeps the gradient.
 
 Fixes the two regressions reported on a clean Windows 11 install of the
 official **DSH 0.2.1-rc.5** desktop build.
@@ -10,8 +15,8 @@ official **DSH 0.2.1-rc.5** desktop build.
   `visibility:hidden` without a space, so the old attribute selector never
   matched and the glyphs stayed dark. The probe is now matched on its actual
   signature, with white glyphs and a `#2A6FE0` strip forced on the element
-  itself, and the Luna gradient flattens under the native overlay so the
-  buttons no longer sit on a white block.
+  itself, and the Windows strip is painted with that same solid colour so the
+  native overlay blends in without a seam.
 - **HARNESS badge**: the official wordmark inverts the badge letters while the
   badge rectangle follows `currentColor`. The badge is now a white pill with
   dark ink in both colour schemes, matching the stock dark theme instead of
@@ -41,7 +46,8 @@ endorsed by, or sponsored by Microsoft. See
 - **Windows 原生标题栏按钮**：Desktop 预载脚本用 `<body>` 上的隐藏探针取标题栏
   颜色。它的 `cssText` 写成 `visibility:hidden`（冒号后没有空格），旧选择器一直
   没命中，图标因此是深色。现在按真实的内联签名匹配，并在探针元素上强制白色
-  图标和 `#2A6FE0` 底色；Luna 渐变在原生覆盖层下方压平，按钮不再坐在白块上。
+  图标和 `#2A6FE0` 底色；Windows 上的整条标题栏也用同一实色，原生覆盖层不再
+  出现接缝。Linux 继续保留 Luna 渐变。
 - **HARNESS 徽章**：官方字标把徽章字母做反色，而徽章矩形跟随 `currentColor`。
   现在两种配色下都固定为白色胶囊 + 深色字，和官方深色主题一致，不再在浅色
   模式下变成深色胶囊。
