@@ -36,7 +36,7 @@
  * The client file is copied to client.js by scripts/build.mjs.
  */
 window.__ModuleLoader__.load({
-  id: '@local/dsh-xp-luna',
+  id: 'dsh-xp-luna',
   factory(require) {
     const React = require('react');
     const h = React.createElement;
@@ -1343,7 +1343,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
     function installStyles() {
       for (const stale of document.querySelectorAll('style[data-xp-luna]')) stale.remove();
       const element = document.createElement('style');
-      element.dataset.plugin = '@local/dsh-xp-luna';
+      element.dataset.plugin = 'dsh-xp-luna';
       element.dataset.xpLuna = '';
       element.textContent = CSS;
       document.head.append(element);
@@ -1367,7 +1367,7 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
             label: () => lunaText().settingsNav,
           }, XpLunaSettings));
 
-        const source = '@local/dsh-xp-luna';
+        const source = 'dsh-xp-luna';
         /** Token-layer disposer while the light palette is active. */
         let layer;
         /** Stylesheet disposer while the light palette is active. */

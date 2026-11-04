@@ -51,7 +51,13 @@ It is not a pixel-perfect recreation — the native window frame and the system 
 https://github.com/BH8GCJ/dsh-xp-luna
 ```
 
-**Desktop, from the command line** — quit the app completely first: the `desktop` profile belongs to the app, and the app rewrites it on exit. `--profile` must come before the pnpm arguments.
+**Plugin Market / npm** — the theme is published as `dsh-xp-luna`; install it from **Plugins → Plugin Market → Themes**, or:
+
+```sh
+dsh plugin --profile desktop add dsh-xp-luna
+```
+
+**Desktop, from the command line (GitHub)** — quit the app completely first: the `desktop` profile belongs to the app, and the app rewrites it on exit. `--profile` must come before the pnpm arguments.
 
 ```sh
 dsh plugin --profile desktop add github:BH8GCJ/dsh-xp-luna
@@ -140,7 +146,7 @@ Selectors use only stable host attributes, never hashed CSS-module class names:
 Disable or remove the plugin in the Plugin Manager; the stock theme comes back immediately. The imported wallpaper and settings stay in `$DSH_HOME/.dsh-xp-luna-data/`; remove the wallpaper from the settings page before uninstalling, or delete that directory. From the command line:
 
 ```sh
-dsh plugin --profile desktop remove @local/dsh-xp-luna
+dsh plugin --profile desktop remove dsh-xp-luna
 ```
 
 ---
@@ -180,7 +186,13 @@ dsh plugin --profile desktop remove @local/dsh-xp-luna
 https://github.com/BH8GCJ/dsh-xp-luna
 ```
 
-**桌面端命令行**——先从命令行完全退出应用：`desktop` profile 由应用自己管理，应用退出时会重写它。`--profile` 必须写在 pnpm 参数之前。
+**插件市场 / npm**——主题已发布为 `dsh-xp-luna`；在 **插件 → 插件市场 → 主题** 里安装，或：
+
+```sh
+dsh plugin --profile desktop add dsh-xp-luna
+```
+
+**桌面端命令行（GitHub）**——先从命令行完全退出应用：`desktop` profile 由应用自己管理，应用退出时会重写它。`--profile` 必须写在 pnpm 参数之前。
 
 ```sh
 dsh plugin --profile desktop add github:BH8GCJ/dsh-xp-luna
@@ -269,7 +281,7 @@ Client 端做三件事；令牌层和样式表只在浅色模式下安装，设�
 在插件管理器里停用或移除即可，原生主题会立刻恢复。导入的壁纸与设置仍留在 `$DSH_HOME/.dsh-xp-luna-data/`；如果希望一并清除，请先在设置页移除壁纸，或直接删除该目录。命令行方式：
 
 ```sh
-dsh plugin --profile desktop remove @local/dsh-xp-luna
+dsh plugin --profile desktop remove dsh-xp-luna
 ```
 
 ---
