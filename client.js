@@ -255,6 +255,7 @@ body {
    instead of the static palette: overriding that palette would also darken
    surfaces such as bg-base and the toast label. */
 [role="tooltip"] {
+  background-color: #FFFFE1 !important;
   color: #1A1A1A !important;
 }
 
@@ -1390,8 +1391,12 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
           }
         };
 
+        const isDark = () =>
+          document.body?.hasAttribute('data-ds-dark-theme') === true ||
+          ctx.theme.getTheme().active.colorScheme === 'dark';
+
         const sync = () => {
-          if (ctx.theme.getTheme().active.colorScheme === 'dark') {
+          if (isDark()) {
             teardown();
             return;
           }
@@ -1418,11 +1423,45 @@ div:has(+ [data-conversation-header-corner]) [data-schedule-reminder-entry] {
             });
         };
 
+        // ui-layout's presenter applies the snapshot from its own
+        // `theme/change` listener by rewriting body's inline tokens. Reacting
+        // inside the same synchronous emit lets that presenter re-apply the
+        // stale snapshot afterwards: the beige layer stayed stuck after
+        // switching to dark, and switching back left a bare white page.
+        // Coalesce our reaction into a microtask so it runs after every
+        // listener has applied, and publishes a clean snapshot of its own.
+        let scheduled = false;
+        const scheduleSync = () => {
+          if (scheduled) return;
+          scheduled = true;
+          queueMicrotask(() => {
+            scheduled = false;
+            sync();
+          });
+        };
+
         ctx.effect(() => {
           sync();
-          const off = ctx.on('theme/change', sync);
+          const off = ctx.on('theme/change', scheduleSync);
+          const observer = new MutationObserver(scheduleSync);
+          observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-ds-dark-theme'],
+          });
+          // The presenter writes tokens inline during boot; a late pass keeps
+          // the first paint from keeping the stock palette when this plugin
+          // mounted before the presenter's first apply.
+          const reassert = () => {
+            if (layer === undefined || isDark()) return;
+            layer = ctx.theme.overrideTokens(source, TOKENS);
+          };
+          const raf = requestAnimationFrame(reassert);
+          const timer = setTimeout(reassert, 350);
           return () => {
             off();
+            observer.disconnect();
+            cancelAnimationFrame(raf);
+            clearTimeout(timer);
             teardown();
           };
         }, 'xp-luna: palette and desktop layers');
